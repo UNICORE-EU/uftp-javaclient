@@ -7,6 +7,8 @@ https://sourceforge.net/p/unicore/uftp-issues/
 UFTP Client 1.8.1 (released Dec 20, 2023)
 -----------------------------------------
  - fix: missing library led to annoying "SLF4J" messages
+ - improvement: use maximum keylength of 56 bytes for the
+   optional data encryption
 
 UFTP Client 1.8.0 (released Nov 06, 2023)
 -----------------------------------------

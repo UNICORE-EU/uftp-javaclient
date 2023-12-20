@@ -1,11 +1,12 @@
 package eu.unicore.uftp.standalone.commands;
 
+import java.util.Random;
+
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UnitParser;
 
@@ -59,16 +60,14 @@ public abstract class DataTransferCommand extends RangedCommand {
 		if (line.hasOption('K')) {
 			UnitParser up = UnitParser.getCapacitiesParser(0);
 			bandwithLimit = (long)up.getDoubleValue(line.getOptionValue('K'));
-			if(verbose) {
-				System.err.println("LIMITING bandwidth per thread to "
-						+up.getHumanReadable(bandwithLimit)+"B/s");
-			}
+			verbose("LIMITING bandwidth per thread to {}B/s", up.getHumanReadable(bandwithLimit));
 		}
 
 		if (line.hasOption('E')) {
 			encrypt = true;
 			try{
-				key=Utils.createKey();
+				key = createCryptoKey();
+				verbose("Encryption enabled with key length {}", key.length);
 			}catch(Exception ex){
 				encrypt = false;
 				System.err.println("WARN: cannot setup encryption: "+ex);
@@ -76,6 +75,12 @@ public abstract class DataTransferCommand extends RangedCommand {
 		}
 		
 		compress = line.hasOption('C');
+	}
+	
+	protected byte[] createCryptoKey() {
+		var key = new byte[56];
+		new Random().nextBytes(key);
+		return key;
 	}
 	
 	protected String getRemoteURLExample1(){
