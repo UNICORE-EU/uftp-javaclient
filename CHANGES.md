@@ -4,6 +4,10 @@ Change log for the UFTP standalone client
 The issue tracker is at
 https://sourceforge.net/p/unicore/uftp-issues/
 
+UFTP Client 1.8.1 (released Dec 20, 2023)
+-----------------------------------------
+ - fix: missing library led to annoying "SLF4J" messages
+
 UFTP Client 1.8.0 (released Nov 06, 2023)
 -----------------------------------------
  - new feature: 'info' shows rate limit, session limit and reservations, if they exist
