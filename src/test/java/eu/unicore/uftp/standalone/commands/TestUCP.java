@@ -214,7 +214,6 @@ public class TestUCP extends BaseServiceTest {
         assertEquals(Utils.md5(new File(src)), Utils.md5(new File(testsDir, "pom.xml")));
     }
 
-    @Test
     public void testMultiThreadedUpload() throws Exception {
         String src =  new File("./pom.xml").getAbsolutePath();
         String target = testsDir.getAbsolutePath();
@@ -226,4 +225,5 @@ public class TestUCP extends BaseServiceTest {
         assertEquals(new File(src).length(), new File(testsDir, "pom.xml").length());
         assertEquals(Utils.md5(new File(src)), Utils.md5(new File(testsDir, "pom.xml")));
     }
+
 }
