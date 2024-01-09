@@ -63,14 +63,16 @@ public class AuthserverClient implements AuthClient {
 		HttpPost postRequest = new HttpPost(uri);
 		authData.addAuthenticationHeaders(postRequest);
 		postRequest.addHeader("Accept", "application/json");
-		String base64Key = client.getEncryptionKey()!=null? Utils.encodeBase64(client.getEncryptionKey()) : null;
+		byte[] key = client.createEncryptionKey();
+		String base64Key = key!=null? Utils.encodeBase64(key) : null;
 		AuthRequest request = createRequestObject(path,
-				client.getStreams(), base64Key, client.isCompress(),
+				client.getStreams(), base64Key, client.getEncryptionAlgorithm(), client.isCompress(),
 				client.getGroup(), client.getClientIP(), persistent);
 		StringEntity input = new StringEntity(gson.toJson(request),
 				ContentType.create("application/json", "UTF-8"));
 		postRequest.setEntity(input);
 		AuthResponse response = httpClient.execute(postRequest, new AuthResponseResponseHandler());
+		response.encryptionKey = key;
 		LOG.debug("Got AuthResponse: {}", response);
 		return response;
 	}
@@ -183,11 +185,13 @@ public class AuthserverClient implements AuthClient {
 	}
 	
 	AuthRequest createRequestObject(String destinationPath, int streamCount,
-			String encryptionKey, boolean compress, String group, String clientIP, boolean persistent) {
+			String encryptionKey, String encryptionAlgorithm, boolean compress,
+			String group, String clientIP, boolean persistent) {
 		AuthRequest ret = new AuthRequest();
 		ret.serverPath = destinationPath;
 		ret.streamCount = streamCount;
 		ret.encryptionKey = encryptionKey;
+		ret.encryptionAlgorithm = encryptionAlgorithm;
 		ret.compress = compress;
 		ret.group = group;
 		ret.client = clientIP;

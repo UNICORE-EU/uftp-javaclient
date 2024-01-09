@@ -2,13 +2,18 @@ Change log for the UFTP standalone client
 =========================================
 
 The issue tracker is at
-https://sourceforge.net/p/unicore/uftp-issues/
+https://github.com/UNICORE-EU/uftp-javaclient/issues
+
+UFTP Client 1.9.0 (released MMM dd, 2024)
+-----------------------------------------
+ - new feature: additional option of AES encryption
+ - improvement: use new encryption key for every new session
 
 UFTP Client 1.8.1 (released Dec 20, 2023)
 -----------------------------------------
  - fix: missing library led to annoying "SLF4J" messages
  - improvement: use maximum keylength of 56 bytes for the
-   optional data encryption
+   Blowfish data encryption
 
 UFTP Client 1.8.0 (released Nov 06, 2023)
 -----------------------------------------

@@ -200,5 +200,18 @@ public class TestUCP extends BaseServiceTest {
     	}
     	assertFalse(new File(testsDir, "downloads/not_you").exists());
     }
+    
+    @Test
+    public void testMultiThreadedDownload() throws Exception {
+       	String src =  new File("./pom.xml").getAbsolutePath();
+    	String target = testsDir.getAbsolutePath();
+    	String[] args = new String[]{ new UCP().getName(), "-u", "demouser:test123",
+    			"-t", "2", "-T", "100",
+    			getAuthURL(src), target
+    	};
+    	assertEquals(0, ClientDispatcher._main(args));
+    	assertEquals(new File(src).length(), new File(testsDir, "pom.xml").length());
+        assertEquals(Utils.md5(new File(src)), Utils.md5(new File(testsDir, "pom.xml")));
+    }
 
 }

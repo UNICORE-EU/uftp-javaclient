@@ -1,7 +1,5 @@
 package eu.unicore.uftp.standalone.commands;
 
-import java.util.Random;
-
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -24,7 +22,9 @@ public abstract class DataTransferCommand extends RangedCommand {
 
 	protected boolean compress;
 	protected boolean encrypt;
-	protected byte[] key;
+
+	protected int keylength;
+	protected String algo;
 
 	protected Options getOptions() {
 		Options options = super.getOptions();
@@ -66,8 +66,19 @@ public abstract class DataTransferCommand extends RangedCommand {
 		if (line.hasOption('E')) {
 			encrypt = true;
 			try{
-				key = createCryptoKey();
-				verbose("Encryption enabled with key length {}", key.length);
+				algo = System.getenv("UFTP_ENCRYPTION_ALGORITHM");
+				if(algo==null) algo="Blowfish";
+				algo = algo.toUpperCase();
+				keylength = 56;
+				if("aes".equalsIgnoreCase(algo)) {
+					int l = 32;
+					String aesLen = System.getenv("UFTP_ENCRYPTION_AES_KEYSIZE");
+					if(aesLen !=null) {
+						l = Integer.parseInt(aesLen);
+					}
+					keylength = 16+l;
+				}
+				verbose("Encryption ({}) enabled with key length {}", algo, keylength);
 			}catch(Exception ex){
 				encrypt = false;
 				System.err.println("WARN: cannot setup encryption: "+ex);
@@ -76,16 +87,11 @@ public abstract class DataTransferCommand extends RangedCommand {
 		
 		compress = line.hasOption('C');
 	}
-	
-	protected byte[] createCryptoKey() {
-		var key = new byte[56];
-		new Random().nextBytes(key);
-		return key;
-	}
-	
+
 	protected String getRemoteURLExample1(){
 		return "* https://<auth_addr>/rest/auth/<SERVER>:<file_path>";
 	}
+
 	protected String getRemoteURLExample2(){
 		return "* https://<ux_addr>/rest/core/storages/<STORAGE>:<file_path>";
 	}
@@ -114,7 +120,10 @@ public abstract class DataTransferCommand extends RangedCommand {
 	protected void setOptions(ClientFacade client){
 		super.setOptions(client);
 		client.setStreams(streams);
-		if(encrypt)client.setEncryptionKey(key);
+		if(encrypt) {
+			client.setEncryptionKeyLength(keylength);
+			client.setEncryptionAlgorithm(algo);
+		}
 		client.setCompress(compress);
 		client.setBandwithLimit(bandwithLimit);
 	}

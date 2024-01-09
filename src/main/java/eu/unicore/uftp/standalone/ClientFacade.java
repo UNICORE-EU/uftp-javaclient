@@ -2,6 +2,7 @@ package eu.unicore.uftp.standalone;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
@@ -26,7 +27,8 @@ public class ClientFacade {
 
 	private boolean compress = false;
 
-	private byte[] encryptionKey = null;
+	private int encryptionKeyLength = -1;
+	private String encryptionAlgorithm = null;
 
 	private boolean resume = false;
 
@@ -72,7 +74,7 @@ public class ClientFacade {
 		UFTPSessionClient sc = getUFTPClient(response);
 		sc.setNumConnections(streams);
 		sc.setCompress(compress);
-		sc.setKey(encryptionKey);
+		sc.setKey(response.encryptionKey);
 		sc.setBandwidthLimit(bandwidthLimit);
 		sc.connect();
 		return sc;
@@ -113,12 +115,23 @@ public class ClientFacade {
 		this.compress = compress;
 	}
 
-	public byte[] getEncryptionKey() {
-		return encryptionKey;
+	public byte[] createEncryptionKey() {
+		if(encryptionKeyLength<0)return null;
+		var key = new byte[encryptionKeyLength];
+		new Random().nextBytes(key);
+		return key;
 	}
 
-	public void setEncryptionKey(byte[] encryptionKey) {
-		this.encryptionKey = encryptionKey;
+	public void setEncryptionKeyLength(int length) {
+		this.encryptionKeyLength = length;
+	}
+
+	public String getEncryptionAlgorithm() {
+		return encryptionAlgorithm;
+	}
+
+	public void setEncryptionAlgorithm(String encryptionAlgorithm) {
+		this.encryptionAlgorithm = encryptionAlgorithm;
 	}
 
 	public long getBandwithLimit() {

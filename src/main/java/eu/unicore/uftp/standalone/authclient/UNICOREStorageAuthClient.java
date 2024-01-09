@@ -53,12 +53,14 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		HttpPost postRequest = new HttpPost(uri);
 		authData.addAuthenticationHeaders(postRequest);
 		postRequest.addHeader("Accept", "application/json");
-		String base64Key = client.getEncryptionKey()!=null? Utils.encodeBase64(client.getEncryptionKey()) : null;
+		byte[] key = client.createEncryptionKey();
+		String base64Key = key!=null? Utils.encodeBase64(key) : null;
 		JSONObject request = createRequestObject(path, base64Key, client.isCompress(), client.getClientIP(), persistent);
 		StringEntity input = new StringEntity(request.toString(),
 				ContentType.create("application/json", "UTF-8"));
 		postRequest.setEntity(input);
 		AuthResponse response = httpClient.execute(postRequest, new UNICOREResponseHandler());
+		response.encryptionKey = key;
 		try{
 			response.secret = request.getJSONObject("extraParameters").getString("uftp.secret");
 		}catch(JSONException e) {

@@ -13,6 +13,7 @@ import eu.unicore.services.rest.security.sshkey.SSHKeyUC;
 import eu.unicore.services.rest.security.sshkey.SSHUtils;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.util.ConsoleUtils;
+import eu.unicore.util.Log;
 
 /**
  * create SSHKey auth info using SSH agent, if possible. 
@@ -53,7 +54,7 @@ public class SshKeyHandler {
 			try{
 				result = useAgent();
 			}catch(Exception ex){
-				System.err.println(Utils.createFaultMessage("WARNING: SSH agent is available, but there was an error when using it",ex));
+				System.err.println(Log.createFaultMessage("WARNING: SSH agent is available, but there was an error when using it",ex));
 			}
 		}
 		if(result==null)result = create();

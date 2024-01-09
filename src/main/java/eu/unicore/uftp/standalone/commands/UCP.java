@@ -389,7 +389,8 @@ public class UCP extends DataTransferCommand {
 		for(int i = 0; i<numChunks; i++){
 			final long first = start;
 			final long end = i<numChunks-1 ? first + chunkSize : total-1;
-			TransferTask task = getDownloadChunkTask(remotePath, local, start, end, null, remoteInfo, rangeMode);
+			RangeMode rm = numChunks>1? RangeMode.READ_WRITE : rangeMode;
+			TransferTask task = getDownloadChunkTask(remotePath, local, start, end, null, remoteInfo, rm);
 			String id = numChunks>1 ? 
 					String.format("%s->%s [%0"+width+"d/%d]", remotePath, local, i+1, numChunks):
 						shortID;
