@@ -14,12 +14,6 @@ UFTP Client 1.8.2 (released Jan 09, 2024)
  - fix: multi-chunk download of file only writes
    single chunk
 
-
-UFTP Client 1.8.2 (released Jan 09, 2024)
------------------------------------------
- - fix: multi-chunk download of file only writes
-   single chunk
-
 UFTP Client 1.8.1 (released Dec 20, 2023)
 -----------------------------------------
  - fix: missing library led to annoying "SLF4J" messages
