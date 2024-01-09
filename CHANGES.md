@@ -9,6 +9,12 @@ UFTP Client 1.9.0 (released MMM dd, 2024)
  - new feature: additional option of AES encryption
  - improvement: use new encryption key for every new session
 
+UFTP Client 1.8.2 (released Jan 09, 2024)
+-----------------------------------------
+ - fix: multi-chunk download of file only writes
+   single chunk
+
+
 UFTP Client 1.8.1 (released Dec 20, 2023)
 -----------------------------------------
  - fix: missing library led to annoying "SLF4J" messages
