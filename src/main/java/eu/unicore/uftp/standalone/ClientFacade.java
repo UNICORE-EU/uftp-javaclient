@@ -9,6 +9,7 @@ import org.apache.logging.log4j.message.ParameterizedMessage;
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.dpc.AuthorizationFailureException;
 import eu.unicore.uftp.dpc.Utils;
+import eu.unicore.uftp.dpc.Utils.EncryptionAlgorithm;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
 import eu.unicore.uftp.standalone.authclient.AuthResponse;
 
@@ -28,7 +29,7 @@ public class ClientFacade {
 	private boolean compress = false;
 
 	private int encryptionKeyLength = -1;
-	private String encryptionAlgorithm = null;
+	private EncryptionAlgorithm encryptionAlgorithm = null;
 
 	private boolean resume = false;
 
@@ -74,7 +75,10 @@ public class ClientFacade {
 		UFTPSessionClient sc = getUFTPClient(response);
 		sc.setNumConnections(streams);
 		sc.setCompress(compress);
-		sc.setKey(response.encryptionKey);
+		if(response.encryptionKey!=null) {
+			sc.setKey(response.encryptionKey);
+			sc.setEncryptionAlgorithm(response.encryptionAlgorithm);
+		}
 		sc.setBandwidthLimit(bandwidthLimit);
 		sc.connect();
 		return sc;
@@ -126,12 +130,12 @@ public class ClientFacade {
 		this.encryptionKeyLength = length;
 	}
 
-	public String getEncryptionAlgorithm() {
+	public EncryptionAlgorithm getEncryptionAlgorithm() {
 		return encryptionAlgorithm;
 	}
 
 	public void setEncryptionAlgorithm(String encryptionAlgorithm) {
-		this.encryptionAlgorithm = encryptionAlgorithm;
+		this.encryptionAlgorithm = EncryptionAlgorithm.valueOf(encryptionAlgorithm);
 	}
 
 	public long getBandwithLimit() {

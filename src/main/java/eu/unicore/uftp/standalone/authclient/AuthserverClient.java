@@ -18,7 +18,6 @@ import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 import org.apache.hc.core5.http.message.StatusLine;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +29,6 @@ import eu.unicore.services.rest.client.IAuthCallback;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UnitParser;
-import eu.unicore.util.Log;
 
 /**
  *
@@ -45,8 +43,6 @@ public class AuthserverClient implements AuthClient {
 	private final Gson gson = new GsonBuilder().create();
 
 	private final ClientFacade client;
-	
-	private static final Logger LOG = Log.getLogger(Log.CLIENT, AuthserverClient.class);
 
 	public AuthserverClient(String authUrl, IAuthCallback authData, ClientFacade client) {
 		this.uri = authUrl;
@@ -66,14 +62,16 @@ public class AuthserverClient implements AuthClient {
 		byte[] key = client.createEncryptionKey();
 		String base64Key = key!=null? Utils.encodeBase64(key) : null;
 		AuthRequest request = createRequestObject(path,
-				client.getStreams(), base64Key, client.getEncryptionAlgorithm(), client.isCompress(),
+				client.getStreams(), base64Key, client.getEncryptionAlgorithm().toString(), client.isCompress(),
 				client.getGroup(), client.getClientIP(), persistent);
 		StringEntity input = new StringEntity(gson.toJson(request),
 				ContentType.create("application/json", "UTF-8"));
 		postRequest.setEntity(input);
 		AuthResponse response = httpClient.execute(postRequest, new AuthResponseResponseHandler());
-		response.encryptionKey = key;
-		LOG.debug("Got AuthResponse: {}", response);
+		if(key!=null) {
+			response.encryptionKey = key;
+			response.encryptionAlgorithm = client.getEncryptionAlgorithm();
+		}
 		return response;
 	}
 	
@@ -83,7 +81,6 @@ public class AuthserverClient implements AuthClient {
 			baseDir = baseDir+"/";
 		}
 		if(baseDir==null)baseDir="";
-		LOG.debug("Initalizing session in <{}>", baseDir);
 		return doConnect(baseDir, persistent);
 	}
 

@@ -1,5 +1,6 @@
 package eu.unicore.uftp.standalone.authclient;
 
+import eu.unicore.uftp.dpc.Utils.EncryptionAlgorithm;
 
 /**
  * @author mgolik
@@ -13,6 +14,7 @@ public class AuthResponse {
     public Integer serverPort;
     public String secret = "";
     public byte[] encryptionKey = null;
+    public EncryptionAlgorithm encryptionAlgorithm = null;
 
     public AuthResponse(boolean success, String reason) {
         this.success = success;

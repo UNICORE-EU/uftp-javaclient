@@ -45,10 +45,10 @@ public class UNICOREStorageAuthClient implements AuthClient {
 
 	@Override
 	public AuthResponse connect(String path) throws Exception {
-		return do_connect(path, false);
+		return doConnect(path, false);
 	}
 
-	private AuthResponse do_connect(String path, boolean persistent) throws Exception {
+	private AuthResponse doConnect(String path, boolean persistent) throws Exception {
 		HttpClient httpClient = HttpClientFactory.getClient(uri);
 		HttpPost postRequest = new HttpPost(uri);
 		authData.addAuthenticationHeaders(postRequest);
@@ -60,7 +60,10 @@ public class UNICOREStorageAuthClient implements AuthClient {
 				ContentType.create("application/json", "UTF-8"));
 		postRequest.setEntity(input);
 		AuthResponse response = httpClient.execute(postRequest, new UNICOREResponseHandler());
-		response.encryptionKey = key;
+		if(key!=null) {
+			response.encryptionKey = key;
+			response.encryptionAlgorithm = client.getEncryptionAlgorithm();
+		}
 		try{
 			response.secret = request.getJSONObject("extraParameters").getString("uftp.secret");
 		}catch(JSONException e) {
@@ -75,7 +78,7 @@ public class UNICOREStorageAuthClient implements AuthClient {
 			baseDir = baseDir+"/";
 		}
 		if(baseDir==null)baseDir="";
-		return do_connect(baseDir, persistent);
+		return doConnect(baseDir, persistent);
 	}
 
 	@Override
