@@ -1,7 +1,9 @@
 package eu.unicore.uftp.standalone;
 
+import java.io.File;
 import java.net.InetAddress;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -32,6 +34,7 @@ public abstract class BaseServiceTest {
 
 	@BeforeClass
 	public static void startServers() throws Exception {
+		FileUtils.deleteQuietly(new File("target","data"));
 		InetAddress host = InetAddress.getByName("localhost");
 		server = new UFTPServer(host, cmdPort, host, listenPort);
 		serverThread = new Thread(server);

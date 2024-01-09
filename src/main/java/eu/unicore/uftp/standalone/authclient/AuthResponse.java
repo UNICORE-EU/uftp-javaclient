@@ -12,6 +12,7 @@ public class AuthResponse {
     public String serverHost;
     public Integer serverPort;
     public String secret = "";
+    public byte[] encryptionKey = null;
 
     public AuthResponse(boolean success, String reason) {
         this.success = success;

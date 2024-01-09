@@ -42,8 +42,7 @@ public class AuthClientTest extends TestCase {
         IAuthCallback auth = new UsernamePassword(username, password);
         AuthserverClient instance = new AuthserverClient("https://server:9991", auth, null);
         AuthRequest result = instance.createRequestObject(destinationPath, streamCount,
-        		encryptionKey, compress, null, clientIP, true);
-
+        		encryptionKey, "foo", compress, null, clientIP, true);
         assertNotNull(result);
         assertEquals(destinationPath, result.serverPath);
         assertEquals(streamCount, result.streamCount);
