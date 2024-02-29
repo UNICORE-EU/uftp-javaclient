@@ -6,6 +6,8 @@ https://github.com/UNICORE-EU/uftp-javaclient/issues
 
 UFTP Client 1.9.0 (released MMM dd, 2024)
 -----------------------------------------
+ - new feature: 'issue-token' command for getting a
+   JWT authentication token from the Auth server
  - new feature: additional option of AES encryption
  - improvement: first try to get a required password from
    environment (UFTP_PASSWORD) before asking interactively

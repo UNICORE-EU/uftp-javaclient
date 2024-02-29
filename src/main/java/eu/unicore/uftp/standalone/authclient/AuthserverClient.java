@@ -1,23 +1,13 @@
 package eu.unicore.uftp.standalone.authclient;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.List;
 
-import org.apache.hc.client5.http.ClientProtocolException;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpException;
-import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.apache.hc.core5.http.message.StatusLine;
+import org.apache.hc.core5.net.URIBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,6 +15,7 @@ import org.json.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import eu.unicore.services.rest.client.BaseClient;
 import eu.unicore.services.rest.client.IAuthCallback;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
@@ -55,26 +46,23 @@ public class AuthserverClient implements AuthClient {
 	}
 
 	private AuthResponse doConnect(String path,boolean persistent) throws Exception {
-		HttpClient httpClient = HttpClientFactory.getClient(uri);
-		HttpPost postRequest = new HttpPost(uri);
-		authData.addAuthenticationHeaders(postRequest);
-		postRequest.addHeader("Accept", "application/json");
 		byte[] key = client.createEncryptionKey();
 		String base64Key = key!=null? Utils.encodeBase64(key) : null;
 		String encryptionAlgorithm = client.getEncryptionAlgorithm()!=null ?
 				client.getEncryptionAlgorithm().toString() : null;
-		AuthRequest request = createRequestObject(path,
+		AuthRequest authRequest = createRequestObject(path,
 				client.getStreams(), base64Key, encryptionAlgorithm, client.isCompress(),
 				client.getGroup(), client.getClientIP(), persistent);
-		StringEntity input = new StringEntity(gson.toJson(request),
-				ContentType.create("application/json", "UTF-8"));
-		postRequest.setEntity(input);
-		AuthResponse response = httpClient.execute(postRequest, new AuthResponseResponseHandler());
-		if(key!=null) {
-			response.encryptionKey = key;
-			response.encryptionAlgorithm = client.getEncryptionAlgorithm();
+		JSONObject request = new JSONObject(gson.toJson(authRequest));
+		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(),authData);
+		try(ClassicHttpResponse res = bc.post(request)){
+			AuthResponse response = gson.fromJson(EntityUtils.toString(res.getEntity()), AuthResponse.class);
+			if(key!=null) {
+				response.encryptionKey = key;
+				response.encryptionAlgorithm = client.getEncryptionAlgorithm();
+			}
+			return response;
 		}
-		return response;
 	}
 	
 	@Override
@@ -86,30 +74,34 @@ public class AuthserverClient implements AuthClient {
 		return doConnect(baseDir, persistent);
 	}
 
-	String infoURL;
-	
 	public JSONObject getInfo() throws Exception {
-		infoURL = makeInfoURL(uri);
-		HttpClient client = HttpClientFactory.getClient(infoURL);
-		HttpGet getRequest = new HttpGet(infoURL);
-		authData.addAuthenticationHeaders(getRequest);
-		getRequest.addHeader("Accept", "application/json");
-		try(ClassicHttpResponse res = client.executeOpen(null, getRequest, HttpClientContext.create())){
-			if(res.getCode()!=200){
-				throw new Exception("Error getting info: "+new StatusLine(res));
-			}
-			else{
-				return new JSONObject(EntityUtils.toString(res.getEntity()));
-			}
-		}
+		String infoURL = makeInfoURL(uri);
+		BaseClient bc = new BaseClient(infoURL,
+				HttpClientFactory.getClientConfiguration(),
+				authData);
+		return bc.getJSON();
 	}
 	
+	public String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception {
+		String tokenURL = makeIssueTokenURL(uri);
+		URIBuilder b = new URIBuilder(tokenURL);
+		if(lifetime>0)b.addParameter("lifetime", String.valueOf(lifetime));
+		if(renewable)b.addParameter("renewable", "true");
+		if(limited)b.addParameter("limited", "true");
+		BaseClient bc = new BaseClient(b.build().toString(),
+				HttpClientFactory.getClientConfiguration(),
+				authData);
+		try(ClassicHttpResponse res = bc.get(ContentType.WILDCARD)){
+			return EntityUtils.toString(res.getEntity());
+		}
+	}
 
 	static String crlf = System.getProperty("line.separator");
 	
 	@Override
-	public String parseInfo(JSONObject info) throws JSONException {
+	public String parseInfo(JSONObject info, String url) throws JSONException {
 		StringBuilder sb = new StringBuilder();
+		String infoURL = makeInfoURL(url);
 		try(Formatter f = new Formatter(sb, null)){
 			f.format("Client identity:    %s%s", getID(info),crlf);
 			f.format("Client auth method: %s%s", authData.getType(),crlf);
@@ -182,7 +174,11 @@ public class AuthserverClient implements AuthClient {
 	public static String makeInfoURL(String url) {
 		return url.split("/rest/auth")[0]+"/rest/auth";
 	}
-	
+
+	public static String makeIssueTokenURL(String url) {
+		return url.split("/rest/auth")[0]+"/rest/auth/token";
+	}
+
 	AuthRequest createRequestObject(String destinationPath, int streamCount,
 			String encryptionKey, String encryptionAlgorithm, boolean compress,
 			String group, String clientIP, boolean persistent) {
@@ -200,35 +196,6 @@ public class AuthserverClient implements AuthClient {
 
 	public IAuthCallback getAuthData() {
 		return authData;
-	}
-
-	class AuthResponseResponseHandler implements HttpClientResponseHandler<AuthResponse> {
-
-		@Override
-		public AuthResponse handleResponse(ClassicHttpResponse hr) throws HttpException, IOException {
-			HttpEntity entity = hr.getEntity();
-			if (hr.getCode() == 200) {
-				if (entity == null) {
-					throw new ClientProtocolException("Invalid server response: Entity empty");
-				}
-				return gson.fromJson(EntityUtils.toString(entity), AuthResponse.class);
-			}
-			String msg = "Unable to authenticate (error code: "+ new StatusLine(hr)+")";
-			int code = hr.getCode();
-			if (code == 401 || code==403) {
-				msg += "==> Please check your user name and/or credentials!";
-			}
-			else if (code == 404) {
-				msg += "==> Please check the server URL!";
-			}
-			else  {
-				try {
-					JSONObject err = new JSONObject(EntityUtils.toString(entity));
-					msg += err.optString("errorMessage", "");
-				}catch(Exception ex) {}
-			}
-			throw new IOException(msg);
-		}
 	}
 
 }

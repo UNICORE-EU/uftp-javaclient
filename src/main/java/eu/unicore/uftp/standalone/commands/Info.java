@@ -49,7 +49,7 @@ public class Info extends Command {
 			System.out.println(j.toString(2));
 		}
 		else {
-			System.out.println(auth.parseInfo(j));
+			System.out.println(auth.parseInfo(j, uri));
 		}
 	}
 	

@@ -27,8 +27,11 @@ public interface AuthClient {
     
     JSONObject getInfo() throws Exception;
     
-    default String parseInfo(JSONObject obj) throws JSONException {
+    default String parseInfo(JSONObject obj, String infoURL) throws JSONException {
     	return "";
     }
 
+    default String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception {
+    	return "not implemented yet";
+    }
 }

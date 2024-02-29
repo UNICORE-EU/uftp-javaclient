@@ -1,25 +1,16 @@
 package eu.unicore.uftp.standalone.authclient;
 
-import java.io.IOException;
 import java.util.Formatter;
 import java.util.Random;
 
-import org.apache.hc.client5.http.ClientProtocolException;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.classic.methods.HttpPost;
-import org.apache.hc.client5.http.protocol.HttpClientContext;
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpException;
-import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
-import org.apache.hc.core5.http.io.entity.StringEntity;
-import org.apache.hc.core5.http.message.StatusLine;
+import org.apache.hc.core5.net.URIBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import eu.unicore.services.rest.client.BaseClient;
 import eu.unicore.services.rest.client.IAuthCallback;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
@@ -49,29 +40,24 @@ public class UNICOREStorageAuthClient implements AuthClient {
 	}
 
 	private AuthResponse doConnect(String path, boolean persistent) throws Exception {
-		HttpClient httpClient = HttpClientFactory.getClient(uri);
-		HttpPost postRequest = new HttpPost(uri);
-		authData.addAuthenticationHeaders(postRequest);
-		postRequest.addHeader("Accept", "application/json");
+		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
 		byte[] key = client.createEncryptionKey();
 		String base64Key = key!=null? Utils.encodeBase64(key) : null;
 		JSONObject request = createRequestObject(path, base64Key, client.isCompress(), client.getClientIP(), persistent);
-		StringEntity input = new StringEntity(request.toString(),
-				ContentType.create("application/json", "UTF-8"));
-		postRequest.setEntity(input);
-		AuthResponse response = httpClient.execute(postRequest, new UNICOREResponseHandler());
-		if(key!=null) {
-			response.encryptionKey = key;
-			response.encryptionAlgorithm = client.getEncryptionAlgorithm();
-		}
-		try{
+		try(ClassicHttpResponse res = bc.post(request)){
+			JSONObject reply = bc.asJSON(res);
+			AuthResponse response = new AuthResponse(true, "OK");
+			response.serverHost = reply.getString("uftp.server.host");
+			response.serverPort = Integer.parseInt(reply.getString("uftp.server.port"));
+			if(key!=null) {
+				response.encryptionKey = key;
+				response.encryptionAlgorithm = client.getEncryptionAlgorithm();
+			}
 			response.secret = request.getJSONObject("extraParameters").getString("uftp.secret");
-		}catch(JSONException e) {
-			throw new IOException(e);
+			return response;
 		}
-		return response;
 	}
-	
+
 	@Override
 	public AuthResponse createSession(String baseDir, boolean persistent) throws Exception {
 		if(baseDir!=null && !baseDir.endsWith("/")) {
@@ -84,25 +70,15 @@ public class UNICOREStorageAuthClient implements AuthClient {
 	@Override
 	public JSONObject getInfo() throws Exception {
 		String infoURL = makeInfoURL(uri);
-		HttpClient client = HttpClientFactory.getClient(infoURL);
-		HttpGet getRequest = new HttpGet(infoURL);
-		authData.addAuthenticationHeaders(getRequest);
-		getRequest.addHeader("Accept", "application/json");
-		try(ClassicHttpResponse res = client.executeOpen(null, getRequest, HttpClientContext.create())){
-			if(res.getCode()!=200){
-				throw new Exception("Error getting info: "+new StatusLine(res));
-			}
-			else{
-				return new JSONObject(EntityUtils.toString(res.getEntity()));
-			}
-		}
+		BaseClient bc = new BaseClient(infoURL, HttpClientFactory.getClientConfiguration(), authData);
+		return bc.getJSON();
 	}
 	
 	static String crlf = System.getProperty("line.separator");
 	
 	
 	@Override
-	public String parseInfo(JSONObject info) throws JSONException {
+	public String parseInfo(JSONObject info, String infoURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		try(Formatter f = new Formatter(sb, null)){
 			f.format("Client identity:    %s%s", getID(info),crlf);
@@ -115,6 +91,21 @@ public class UNICOREStorageAuthClient implements AuthClient {
 			}catch(JSONException e) {}
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception {
+		String tokenURL = makeIssueTokenURL(uri);
+		URIBuilder b = new URIBuilder(tokenURL);
+		if(lifetime>0)b.addParameter("lifetime", String.valueOf(lifetime));
+		if(renewable)b.addParameter("renewable", "true");
+		if(limited)b.addParameter("limited", "true");
+		BaseClient bc = new BaseClient(b.build().toString(),
+				HttpClientFactory.getClientConfiguration(),
+				authData);
+		try(ClassicHttpResponse res = bc.get(ContentType.WILDCARD)){
+			return EntityUtils.toString(res.getEntity());
+		}
 	}
 
 	private String getID(JSONObject info) throws JSONException {
@@ -150,76 +141,33 @@ public class UNICOREStorageAuthClient implements AuthClient {
 	public static String makeInfoURL(String url) {
 		return url.split("/rest/core")[0]+"/rest/core";
 	}
-	
-	private JSONObject createRequestObject(String path, String encryptionKey, boolean compress, String clientIP, boolean persistent) throws IOException {
-		try {
-			JSONObject ret = new JSONObject();
-			ret.put("file", path);
-			ret.put("protocol", "UFTP");
-			JSONObject params = new JSONObject();
-			ret.put("extraParameters", params);
 
-			params.put("uftp.secret", generateSecret());
-			if(clientIP!=null) {
-				params.put("uftp.client.host", clientIP);
-			}
-			if(encryptionKey!=null) {
-				params.put("uftp.encryption", "true");
-			}
-			params.put("uftp.compression", compress);
-			params.put("uftp.persistent", persistent);
-			
-			return ret;
-		} catch(JSONException e) {
-			throw new IOException(e);
+	public static String makeIssueTokenURL(String url) {
+		return url.split("/rest/core")[0]+"/rest/core/token";
+	}
+
+	private JSONObject createRequestObject(String path, String encryptionKey, boolean compress, String clientIP, boolean persistent) throws JSONException {
+		JSONObject ret = new JSONObject();
+		ret.put("file", path);
+		ret.put("protocol", "UFTP");
+		JSONObject params = new JSONObject();
+		ret.put("extraParameters", params);
+		params.put("uftp.secret", generateSecret());
+		if(clientIP!=null) {
+			params.put("uftp.client.host", clientIP);
 		}
+		if(encryptionKey!=null) {
+			params.put("uftp.encryption", "true");
+		}
+		params.put("uftp.compression", compress);
+		params.put("uftp.persistent", persistent);
+		return ret;
 	}
 
 	public IAuthCallback getAuthData() {
 		return authData;
 	}
-
-
-	class UNICOREResponseHandler implements HttpClientResponseHandler<AuthResponse> {
-
-		@Override
-		public AuthResponse handleResponse(ClassicHttpResponse hr) throws HttpException, IOException {
-			HttpEntity entity = hr.getEntity();
-			int statusCode = hr.getCode();
-			JSONObject reply = null;
-			if (statusCode == 200) {
-				if (entity == null) {
-					throw new ClientProtocolException("Invalid server response: Entity empty");
-				}
-				try{
-					reply = new JSONObject(EntityUtils.toString(entity));
-					AuthResponse response = new AuthResponse(true, "OK");
-					response.serverHost = reply.getString("uftp.server.host");
-					response.serverPort = Integer.parseInt(reply.getString("uftp.server.port"));
-					return response;
-				}catch(JSONException js){
-					throw new IOException("Invalid reply", js);
-				}
-			}
-			String msg = "Unable to authenticate (error code: "
-					+ new StatusLine(hr)+") ";
-			
-			if (statusCode == 401 || statusCode==403) {
-				msg += "==> Please check your user name and/or credentials!";
-			}
-			else if (statusCode == 404) {
-				msg += "==> Please check the server URL!";
-			}
-			else  {
-				try {
-					reply = new JSONObject(EntityUtils.toString(entity));
-					msg += reply.optString("errorMessage", "");
-				}catch(Exception ex) {}
-			}
-			throw new IOException(msg);
-		}
-	}
-		
+	
 	private static final char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 
 	static String generateSecret() {

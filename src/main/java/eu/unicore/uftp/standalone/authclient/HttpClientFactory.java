@@ -7,6 +7,7 @@ import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 import eu.unicore.util.httpclient.HttpUtils;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 /**
  *
@@ -20,10 +21,7 @@ public class HttpClientFactory {
     }
 
     private static HttpClient buildClient(String url){
-        DefaultClientConfiguration security = new DefaultClientConfiguration();
-        security.setValidator(new BinaryCertChainValidator(true));
-        security.setSslAuthn(true);
-        security.setSslEnabled(true);
+    	IClientConfiguration security = getClientConfiguration();
         checkHttpProxy();
         return HttpUtils.createClient(url, security);
     }
@@ -37,6 +35,14 @@ public class HttpClientFactory {
     	if(httpProxyPort!=null) {
     		System.setProperty("proxyPort", httpProxyPort);
         }
+    }
+    
+    public static IClientConfiguration getClientConfiguration() {
+    	DefaultClientConfiguration security = new DefaultClientConfiguration();
+        security.setValidator(new BinaryCertChainValidator(true));
+        security.setSslAuthn(true);
+        security.setSslEnabled(true);
+        return security;
     }
     
 }

@@ -5,7 +5,7 @@ _uftp()
   COMPREPLY=()
   cur=`_get_cword`
   prev="${COMP_WORDS[COMP_CWORD-1]}"
-  commands="authenticate checksum cp info ls mkdir rcp rm share sync"
+  commands="authenticate checksum cp info issue-token ls mkdir rcp rm share sync"
   global_opts="--auth --group --help --identity --client --oidc-agent --password --user --verbose --help"
 
 
@@ -29,6 +29,9 @@ _uftp()
     ;;
     info)
     opts="$global_opts --raw"
+    ;;
+    issue-token)
+    opts="$global_opts --inspect --lifetime --limited --renewable"
     ;;
     ls)
     opts="$global_opts --human-readable"

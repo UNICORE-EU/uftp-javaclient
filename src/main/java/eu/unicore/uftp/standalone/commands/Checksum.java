@@ -34,11 +34,13 @@ public class Checksum extends RangedCommand {
 	public String getArgumentDescription() {
 		return "https://<server-host>:<server-port>/rest/auth/SERVER-NAME:file";
 	}
-	
+
+	@Override
 	public String getSynopsis(){
 		return "Compute checksums for remote file(s)";
 	}
-	
+
+	@Override
 	protected Options getOptions() {
 		Options options = super.getOptions();
 		options.addOption(Option.builder("r").longOpt("recurse")
