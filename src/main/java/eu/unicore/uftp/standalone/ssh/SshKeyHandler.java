@@ -43,7 +43,7 @@ public class SshKeyHandler {
 		this.token = token;
 		this.preferJWT = Boolean.parseBoolean(Utils.getProperty("UFTP_SSH_PREFER_JWT", "false"));
 	}
-	
+
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
 	}
@@ -61,15 +61,15 @@ public class SshKeyHandler {
 		
 		return result;
 	}
-	
+
 	public void selectIdentity() {
 		this.selectIdentity = true;
 	}
-	
+
 	public void preferJWT() {
 		this.preferJWT = true;
 	}
-	
+
 	protected IAuthCallback create() throws GeneralSecurityException, IOException {
 		if(privateKey == null || !privateKey.exists()){
 	                 throw new IOException("No private key found!");
@@ -78,6 +78,12 @@ public class SshKeyHandler {
 			private char[]_p;
 			@Override
 			public char[] getPassword() {
+				if(_p==null) {
+					String pwd = System.getenv("UFTP_PASSWORD");
+					if(pwd!=null) {
+						_p=pwd.toCharArray();
+					}
+				}
 				if(_p==null) {
 					_p = ConsoleUtils.readPassword("Enter passphrase for '"+privateKey.getAbsolutePath()+"': ").toCharArray();
 				}

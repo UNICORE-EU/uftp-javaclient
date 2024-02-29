@@ -61,8 +61,10 @@ public class AuthserverClient implements AuthClient {
 		postRequest.addHeader("Accept", "application/json");
 		byte[] key = client.createEncryptionKey();
 		String base64Key = key!=null? Utils.encodeBase64(key) : null;
+		String encryptionAlgorithm = client.getEncryptionAlgorithm()!=null ?
+				client.getEncryptionAlgorithm().toString() : null;
 		AuthRequest request = createRequestObject(path,
-				client.getStreams(), base64Key, client.getEncryptionAlgorithm().toString(), client.isCompress(),
+				client.getStreams(), base64Key, encryptionAlgorithm, client.isCompress(),
 				client.getGroup(), client.getClientIP(), persistent);
 		StringEntity input = new StringEntity(gson.toJson(request),
 				ContentType.create("application/json", "UTF-8"));

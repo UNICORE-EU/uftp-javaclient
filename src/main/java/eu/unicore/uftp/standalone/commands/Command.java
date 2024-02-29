@@ -121,7 +121,10 @@ public abstract class Command implements ICommand {
 			password = tokens!=null && tokens.length>1 ? tokens[1] : null;
 			if(password == null){
 				if(line.hasOption('P')){
-					password = ConsoleUtils.readPassword("Password:");
+					password = System.getenv("UFTP_PASSWORD");
+					if(password==null) {
+						password = ConsoleUtils.readPassword("Password:");
+					}
 					enableSSH = false;
 				}
 			}
