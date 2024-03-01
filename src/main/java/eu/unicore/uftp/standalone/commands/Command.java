@@ -74,7 +74,7 @@ public abstract class Command implements ICommand {
 				.hasArg()
 				.build());
 		options.addOption(Option.builder("A").longOpt("auth")
-				.desc("Authorization header value for authentication")
+				.desc("Bearer token value for authentication")
 				.required(false)
 				.hasArg()
 				.build());
@@ -138,6 +138,9 @@ public abstract class Command implements ICommand {
 				throw new IllegalArgumentException("Only one of '-u', '-A' or 'O' can be used!");
 			}
 			authheader = line.getOptionValue('A');
+			if(authheader.split(" ").length==1) {
+				authheader = "Bearer "+authheader;
+			}
 			enableSSH = false;
 		}
 		if (line.hasOption('O')){
