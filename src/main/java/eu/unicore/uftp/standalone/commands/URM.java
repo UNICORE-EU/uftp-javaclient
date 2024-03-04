@@ -1,7 +1,6 @@
 package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 import org.jline.reader.LineReader;
@@ -10,6 +9,7 @@ import org.jline.reader.LineReaderBuilder;
 import eu.unicore.uftp.client.FileInfo;
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
+import eu.unicore.uftp.standalone.util.UOptions;
 
 public class URM extends Command {
 
@@ -17,8 +17,9 @@ public class URM extends Command {
 
 	private boolean recurse = false;
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("q").longOpt("quiet")
 				.desc("Quiet mode, don't ask for confirmation")
 				.required(false)

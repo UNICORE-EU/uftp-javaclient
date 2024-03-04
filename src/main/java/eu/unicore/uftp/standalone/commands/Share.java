@@ -3,7 +3,6 @@ package eu.unicore.uftp.standalone.commands;
 import java.io.File;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,6 +11,7 @@ import eu.unicore.security.Client;
 import eu.unicore.services.rest.client.BaseClient;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
+import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 
 /**
@@ -33,8 +33,9 @@ public class Share extends Command {
 		return "share";
 	}
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("l").longOpt("list")
 				.desc("List shares")
 				.required(false)

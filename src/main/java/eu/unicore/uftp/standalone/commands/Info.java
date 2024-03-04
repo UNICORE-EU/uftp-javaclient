@@ -1,13 +1,13 @@
 package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.json.JSONObject;
 
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
+import eu.unicore.uftp.standalone.util.UOptions;
 
 public class Info extends Command {
 	
@@ -20,8 +20,9 @@ public class Info extends Command {
 		return "info";
 	}
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("R").longOpt("raw")
 				.desc("Print the JSON response from server")
 				.required(false)

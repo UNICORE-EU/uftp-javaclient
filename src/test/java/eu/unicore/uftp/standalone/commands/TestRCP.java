@@ -39,10 +39,12 @@ public class TestRCP extends BaseServiceTest {
     	String src = new File("./pom.xml").getAbsolutePath();
     	String target = new File(testsDir, "test.dat").getAbsolutePath();
     	String[] args = new String[]{ new URCP().getName(), "-u", "demouser:test123",
+    			"-n", "2", "-E",
     			getAuthURL(src), getAuthURL(target)
     	};
-    	// Java UFTPD does not do rcp...
-    	assertEquals(1, ClientDispatcher._main(args));
+    	assertEquals(0, ClientDispatcher._main(args));
+    	Thread.sleep(5000);
+    	// TBD status check
     }
 
 }

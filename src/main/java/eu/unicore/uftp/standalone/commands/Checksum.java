@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 
@@ -13,6 +12,7 @@ import eu.unicore.uftp.client.UFTPSessionClient.HashInfo;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.lists.FileCrawler.RecursivePolicy;
 import eu.unicore.uftp.standalone.lists.RemoteFileCrawler;
+import eu.unicore.uftp.standalone.util.UOptions;
 
 /**
  * tell the server to compute checksum(s) for remote file(s)
@@ -41,8 +41,8 @@ public class Checksum extends RangedCommand {
 	}
 
 	@Override
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("r").longOpt("recurse")
 				.desc("Recurse into subdirectories, if applicable")
 				.required(false)

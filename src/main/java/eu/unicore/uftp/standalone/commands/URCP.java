@@ -3,20 +3,20 @@ package eu.unicore.uftp.standalone.commands;
 import java.util.Map;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthResponse;
+import eu.unicore.uftp.standalone.util.UOptions;
 
 /**
  * server-server copy (remote copy)
  *
  * @author schuller
  */
-public class URCP extends RangedCommand {
+public class URCP extends DataTransferCommand {
 
 	protected String target;
 
@@ -38,8 +38,9 @@ public class URCP extends RangedCommand {
 		return "Server-to-server copy file(s).";
 	}
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("p").longOpt("one-time-password")
 				.desc("The one-time password for the source side")
 				.required(false)
@@ -47,11 +48,6 @@ public class URCP extends RangedCommand {
 				.build());
 		options.addOption(Option.builder("s").longOpt("server")
 				.desc("UFTPD server address in the form host:port")
-				.required(false)
-				.hasArg()
-				.build());
-		options.addOption(Option.builder("B").longOpt("bytes")
-				.desc("Byte range")
 				.required(false)
 				.hasArg()
 				.build());

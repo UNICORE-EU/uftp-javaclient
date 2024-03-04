@@ -1,11 +1,10 @@
 package eu.unicore.uftp.standalone.commands;
 
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import eu.unicore.uftp.standalone.ClientFacade;
+import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.uftp.standalone.util.UnitParser;
 
 /**
@@ -26,26 +25,27 @@ public abstract class DataTransferCommand extends RangedCommand {
 	protected int keylength;
 	protected String algo;
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("n").longOpt("streams")
 				.desc("Number of TCP streams per connection/thread")
 				.required(false)
 				.hasArg().argName("Streams")
-				.build());
+				.build(), UOptions.GRP_TRANSFER);
 		options.addOption(Option.builder("E").longOpt("encrypt")
 				.desc("Encrypt data connections")
 				.required(false)
-				.build());
+				.build(), UOptions.GRP_TRANSFER);
 		options.addOption(Option.builder("C").longOpt("compress")
 				.desc("Compress data for transfer")
 				.required(false)
-				.build());
+				.build(), UOptions.GRP_TRANSFER);
 		options.addOption(Option.builder("K").longOpt("bandwith-limit")
 				.desc("Limit bandwith per FTP connection (bytes per second)")
 				.required(false)
 				.hasArg().argName("BandwithLimit")
-				.build());
+				.build(), UOptions.GRP_TRANSFER);
 		return options;
 	}
 	
@@ -84,36 +84,7 @@ public abstract class DataTransferCommand extends RangedCommand {
 				System.err.println("WARN: cannot setup encryption: "+ex);
 			}
 		}
-		
 		compress = line.hasOption('C');
-	}
-
-	protected String getRemoteURLExample1(){
-		return "* https://<auth_addr>/rest/auth/<SERVER>:<file_path>";
-	}
-
-	protected String getRemoteURLExample2(){
-		return "* https://<ux_addr>/rest/core/storages/<STORAGE>:<file_path>";
-	}
-
-	/**
-	 * print help
-	 */
-	@Override
-	public void printUsage() {
-		HelpFormatter formatter = new HelpFormatter();
-		String newLine=System.getProperty("line.separator");
-		
-		StringBuilder s = new StringBuilder();
-		s.append(getName()).append(" [OPTIONS] ").append(getArgumentDescription()).append(newLine);
-		s.append(getSynopsis()).append(newLine);
-		s.append("Remote URLs are built as follows:").append(newLine);
-		s.append(getRemoteURLExample1()).append(newLine);
-		s.append(getRemoteURLExample2());
-		
-		Options def=getOptions();
-		formatter.setSyntaxPrefix("Usage: ");
-		formatter.printHelp(s.toString(), def);
 	}
 
 	@Override

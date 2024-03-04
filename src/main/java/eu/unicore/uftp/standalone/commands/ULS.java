@@ -5,21 +5,22 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 
 import eu.unicore.uftp.client.FileInfo;
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
+import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.uftp.standalone.util.UnitParser;
 
 public class ULS extends Command {
 
 	boolean humanReadable = false;
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("H").longOpt("human-readable")
 				.desc("Show file sizes with units like k, M, G, ...")
 				.required(false)

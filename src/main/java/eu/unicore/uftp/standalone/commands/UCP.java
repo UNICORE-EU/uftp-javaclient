@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -35,6 +34,7 @@ import eu.unicore.uftp.standalone.util.ClientPool;
 import eu.unicore.uftp.standalone.util.ClientPool.TransferTask;
 import eu.unicore.uftp.standalone.util.ClientPool.TransferTracker;
 import eu.unicore.uftp.standalone.util.RangeMode;
+import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.uftp.standalone.util.UnitParser;
 import eu.unicore.util.Log;
 import eu.unicore.util.Pair;
@@ -76,8 +76,9 @@ public class UCP extends DataTransferCommand {
 		return "Copy file(s). Wildcards '*' are supported.";
 	}
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("R").longOpt("resume")
 				.desc("Check existing target file(s) and try to resume")
 				.required(false)

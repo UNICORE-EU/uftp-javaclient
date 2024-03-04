@@ -1,13 +1,13 @@
 package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.json.JSONObject;
 
 import eu.unicore.services.rest.security.jwt.JWTUtils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
+import eu.unicore.uftp.standalone.util.UOptions;
 
 /**
  * ask the auth server to issue a JWT token for
@@ -31,8 +31,8 @@ public class IssueToken extends Command {
 	}
 
 	@Override
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("l")
 				.longOpt("lifetime")
 				.desc("Initial lifetime (in seconds) for token.")

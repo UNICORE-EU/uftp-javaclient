@@ -1,9 +1,9 @@
 package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 
 import eu.unicore.uftp.standalone.util.RangeMode;
+import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.uftp.standalone.util.UnitParser;
 
 public abstract class RangedCommand extends Command {
@@ -16,13 +16,14 @@ public abstract class RangedCommand extends Command {
 
 	protected RangeMode rangeMode = RangeMode.READ;
 
-	protected Options getOptions() {
-		Options options = super.getOptions();
+	@Override
+	protected UOptions getOptions() {
+		UOptions options = super.getOptions();
 		options.addOption(Option.builder("B").longOpt("bytes")
 				.desc("Byte range")
 				.required(false)
 				.hasArg()
-				.build());
+				.build(), UOptions.GRP_TRANSFER);
 		return options;
 	}
 	

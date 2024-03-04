@@ -26,6 +26,7 @@ import eu.unicore.uftp.standalone.ssh.SSHAgent;
 import eu.unicore.uftp.standalone.ssh.SshKeyHandler;
 import eu.unicore.uftp.standalone.util.Anonymous;
 import eu.unicore.uftp.standalone.util.ConsoleUtils;
+import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.util.Log;
 
 /***
@@ -57,27 +58,36 @@ public abstract class Command implements ICommand {
 
 	protected String clientIP;
 
-	protected Options getOptions() {
-		Options options = new Options();
+	protected UOptions getOptions() {
+		UOptions options = new UOptions();
 		options.addOption(Option.builder("h").longOpt("help")
 				.desc("Show help / usage information")
 				.required(false)
-				.build());
+				.build(), UOptions.GRP_GENERAL);
+		options.addOption(Option.builder("v").longOpt("verbose")
+				.desc("Be verbose")
+				.required(false)
+				.build(), UOptions.GRP_GENERAL);
 		options.addOption(Option.builder("u").longOpt("user")
 				.desc("Username for username[:password] or key-based authentication")
 				.required(false)
 				.hasArg()
-				.build());
+				.build(), UOptions.GRP_AUTH);
+		options.addOption(Option.builder("I").longOpt("client")
+				.desc("Client IP address: address-list")
+				.required(false)
+				.hasArg()
+				.build(), UOptions.GRP_GENERAL);
 		options.addOption(Option.builder("g").longOpt("group")
 				.desc("Requested group membership to be used")
 				.required(false)
 				.hasArg()
-				.build());
+				.build(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("A").longOpt("auth")
 				.desc("Bearer token value for authentication")
 				.required(false)
 				.hasArg()
-				.build());
+				.build(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("O").longOpt("oidc-agent")
 				.desc("Use oidc-agent with the specified account")
 				.required(false)
@@ -86,21 +96,12 @@ public abstract class Command implements ICommand {
 		options.addOption(Option.builder("P").longOpt("password")
 				.desc("Interactively query for a missing password")
 				.required(false)
-				.build());
+				.build(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("i").longOpt("identity")
 				.desc("Identity file (private key) for key-based authentication")
 				.required(false)
 				.hasArg()
-				.build());
-		options.addOption(Option.builder("I").longOpt("client")
-				.desc("Client IP address: address-list")
-				.required(false)
-				.hasArg()
-				.build());
-		options.addOption(Option.builder("v").longOpt("verbose")
-				.desc("Be verbose")
-				.required(false)
-				.build());
+				.build(), UOptions.GRP_AUTH);
 		return options;
 	}
 
@@ -207,11 +208,49 @@ public abstract class Command implements ICommand {
 		StringBuilder s = new StringBuilder();
 		s.append(getName()).append(" [OPTIONS] ").append(getArgumentDescription()).append(newLine);
 		s.append(getSynopsis()).append(newLine);
-
-		Options def=getOptions();
-		formatter.setSyntaxPrefix("Usage: ");
-		formatter.printHelp(s.toString(), def);
+		s.append("Remote URLs are built as follows:").append(newLine);
+		s.append(getRemoteURLExample1()).append(newLine);
+		s.append(getRemoteURLExample2()).append(newLine).append(newLine);
+		s.append("Options:").append(newLine);
+		
+		String syntax = s.toString();
+		
+		UOptions options = getOptions();
+		Options def = options.getDefaultOptions();
+		if(def!=null){
+			formatter.printHelp(syntax, def);
+		}
+		else{
+			formatter.printHelp(syntax, new Options());
+		}
+		Options transferOptions = options.getTransferOptions();
+		if(transferOptions!=null){
+			System.out.println();
+			formatter.setSyntaxPrefix("Transfer options:");
+			formatter.printHelp(" "+newLine, transferOptions);
+		}
+		Options authOptions = options.getAuthenticationOptions();
+		if(authOptions!=null){
+			System.out.println();
+			formatter.setSyntaxPrefix("Authentication options:");
+			formatter.printHelp(" "+newLine, authOptions);
+		}
+		Options general=options.getGeneralOptions();
+		if(general!=null){
+			System.out.println();
+			formatter.setSyntaxPrefix("General options:");
+			formatter.printHelp(" "+newLine, general);
+		}
 	}
+	
+	protected String getRemoteURLExample1(){
+		return "* https://<auth_addr>/rest/auth/<SERVER>:<file_path>";
+	}
+
+	protected String getRemoteURLExample2(){
+		return "* https://<ux_addr>/rest/core/storages/<STORAGE>:<file_path>";
+	}
+
 
 
 	protected IAuthCallback getAuthData() throws Exception {
