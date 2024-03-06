@@ -4,17 +4,20 @@ Change log for the UFTP standalone client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-UFTP Client 1.9.0 (released Mar dd, 2024)
+UFTP Client 1.9.0 (released Mar 06, 2024)
 -----------------------------------------
  - new feature: 'issue-token' command for getting a
    JWT authentication token from the Auth server
  - new feature: additional option of AES encryption
+   (to enable, set environment variable UFTP_ENCRYPTION_ALGORITHM="AES")
  - improvement: first try to get a required password from
    environment (UFTP_PASSWORD) before asking interactively
  - improvement: use new encryption key for every new session
- - improvement: add usual transfer options to 'rcp'
+ - improvement: add missing transfer options (multi-stream, encrypt,
+   compress) to 'rcp'
  - improvement: command help output now groups the available
-   options
+   options for better readability
+ - fix: missing library caused oidc-agent authentication to fail
 
 UFTP Client 1.8.2 (released Jan 09, 2024)
 -----------------------------------------

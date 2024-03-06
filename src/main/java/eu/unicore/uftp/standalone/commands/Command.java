@@ -73,7 +73,7 @@ public abstract class Command implements ICommand {
 				.required(false)
 				.hasArg()
 				.build(), UOptions.GRP_AUTH);
-		options.addOption(Option.builder("I").longOpt("client")
+		options.addOption(Option.builder("X").longOpt("client")
 				.desc("Client IP address: address-list")
 				.required(false)
 				.hasArg()

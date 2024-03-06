@@ -75,13 +75,13 @@ public class SshKeyHandler {
 	                 throw new IOException("No private key found!");
 		}
 		final PasswordSupplier pf = new PasswordSupplier() {
-			private char[]_p;
+			private char[] _p;
 			@Override
 			public char[] getPassword() {
 				if(_p==null) {
 					String pwd = System.getenv("UFTP_PASSWORD");
 					if(pwd!=null) {
-						_p=pwd.toCharArray();
+						_p = pwd.toCharArray();
 					}
 				}
 				if(_p==null) {

@@ -9,12 +9,12 @@ import eu.unicore.services.rest.client.IAuthCallback;
 
 public class OIDCAgentAuth implements IAuthCallback {
 	
-	private String account;
+	private final String account;
 
 	private OIDCAgentProxy ap;
-	
+
 	private String token;
-	
+
 	public OIDCAgentAuth(String account) {
 		this.account = account;
 	}
@@ -30,30 +30,26 @@ public class OIDCAgentAuth implements IAuthCallback {
 		}
 		httpMessage.setHeader("Authorization","Bearer "+token);
 	}
-	
+
 	protected void retrieveToken() throws Exception {
 		setupOIDCAgent();
-		
 		JSONObject request = new JSONObject();
 		request.put("request", "access_token");
 		request.put("account", account);
-		
 		JSONObject reply = new JSONObject(ap.send(request.toString()));
 		boolean success = "success".equalsIgnoreCase(reply.getString("status"));
 		if(!success){
-			String error = reply.getString("error");
+			String error = reply.optString("error", reply.toString());
 			throw new IOException("Error received from oidc-agent: <"+error+">");
 		}
-		
 		token = reply.getString("access_token");
-		
 	}
 
 	protected void setupOIDCAgent() throws Exception {
 		if(!OIDCAgentProxy.isConnectorAvailable())throw new IOException("oidc-agent is not available");
 		ap = new OIDCAgentProxy();
 	}
-	
+
 	@Override
 	public String getType() {
 		return "OIDC-AGENT";

@@ -46,8 +46,8 @@ with open(TEMPLATE) as f:
     
 commands = sorted(find_commands())
 global_opts = find_options("info")
-global_opts.append("--help")
 global_opts.remove("--raw")
+global_opts.sort()
 case_body = ""
 
 

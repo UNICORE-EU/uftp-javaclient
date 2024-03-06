@@ -6,8 +6,6 @@ import java.lang.reflect.Method;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 
-import org.json.JSONObject;
-
 import jnr.constants.platform.ProtocolFamily;
 import jnr.constants.platform.Sock;
 import jnr.unixsocket.UnixSocketAddress;
@@ -53,22 +51,6 @@ public class OIDCAgentProxy {
         	return result.toString();
         }
 	}
-	
-	// testing...
-	public static void main(String[] args) throws Exception {
-		OIDCAgentProxy ap = new OIDCAgentProxy();
-		String path = "/tmp/oidc-OHVSC9/oidc-agent.24569";
-		JSONObject j = new JSONObject();
-		j.put("request", "xxaccount_list");
-		System.out.println("reply: "+ap.send(j.toString(), path));
-		
-//		j = new JSONObject();
-//		j.put("request", "access_token");
-//		j.put("account", "hbp");
-//		System.out.println("reply: "+ap.send(j.toString(), path));
-		
-	}
-	
 	
 	protected UnixSocketChannel createChannel() throws Exception {
 		// must use reflection because most things in JNR are package private 
