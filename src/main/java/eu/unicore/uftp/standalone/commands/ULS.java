@@ -78,7 +78,10 @@ public class ULS extends Command {
 		}
 	}
 
-	final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+	long sixMonths = 15811200 * 1000l;
+
+	final SimpleDateFormat formatRecent = new SimpleDateFormat("MMM dd HH:mm");
+	final SimpleDateFormat formatOlder = new SimpleDateFormat("MMM dd yyyy");
 
 	final UnitParser up = UnitParser.getCapacitiesParser(2);
 
@@ -97,7 +100,12 @@ public class ULS extends Command {
 				info.append(String.format(" %d ", fi.getSize()));
 			}
 		}
-		info.append(format.format(new Date(fi.getLastModified())));	
+		if(fi.getLastModified() < System.currentTimeMillis() - sixMonths) {
+			info.append(formatOlder.format(new Date(fi.getLastModified())));
+		}
+		else {
+			info.append(formatRecent.format(new Date(fi.getLastModified())));
+		}
 		info.append(" ").append(fi.getPath());
 		System.out.println(info.toString());
 	}

@@ -117,7 +117,7 @@ public final class ClientDispatcher {
 
 	private boolean isHelp(String arg) {
 		for(String h: help){
-			if(arg.toLowerCase().startsWith(h))
+			if(arg.startsWith(h))
 				return true;
 		}
 		return false;
