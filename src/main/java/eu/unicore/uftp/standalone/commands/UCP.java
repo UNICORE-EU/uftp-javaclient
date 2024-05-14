@@ -213,6 +213,9 @@ public class UCP extends DataTransferCommand {
 			throws Exception {
 		try(UFTPSessionClient sc = client.doConnect(destinationURL)){
 			String remotePath = client.getConnectionManager().getPath();
+			if(remotePath.length()==0) {
+				remotePath=".";
+			}
 			RecursivePolicy policy = recurse ? RecursivePolicy.RECURSIVE : RecursivePolicy.NONRECURSIVE;
 			try(ClientPool pool = new ClientPool(tasks, numClients, client, destinationURL, verbose, showPerformance)){
 				for(String localSource: localSources) {

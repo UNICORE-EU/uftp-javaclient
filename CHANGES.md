@@ -4,12 +4,13 @@ Change log for the UFTP standalone client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-UFTP Client 1.9.1 (released mmm dd, 2024)
+UFTP Client 1.9.1 (released May 14, 2024)
 -----------------------------------------
  - fix: 'ls': change modification date format to resemble
    Unix 'ls -l'
  - fix: 'ls -H' option was triggering help output, and did
    not work as advertised
+ - fix: 'cp' upload to default directory ("https://...:")
 
 UFTP Client 1.9.0 (released Mar 06, 2024)
 -----------------------------------------
