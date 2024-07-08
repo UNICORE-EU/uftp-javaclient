@@ -132,8 +132,6 @@ public class UCP extends DataTransferCommand {
 			numClients = Integer.parseInt(line.getOptionValue('t'));
 			if(numClients<1){
 				throw new ParseException("Number of threads must be larger than '1'!");
-			}else if(numClients>1){
-				preserve=true; // want to write chunks
 			}
 			if (line.hasOption('T')) {
 				String thresh = line.getOptionValue('T');
@@ -306,7 +304,12 @@ public class UCP extends DataTransferCommand {
 					if(preserve && !remote.startsWith("/dev/")){
 						Calendar to = Calendar.getInstance();
 						to.setTimeInMillis(file.lastModified());
-						sc.setModificationTime(remote, to);
+						try{
+							sc.setModificationTime(remote, to);
+						}catch(Exception ex) {
+							verbose("WARNNG: could not set file modification time on remote file '{}'",
+									remote);
+						}
 					}
 				}
 			}};
