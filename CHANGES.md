@@ -1,14 +1,15 @@
-Change log for the UFTP standalone client
-=========================================
+Change log for the UFTP commandline client
+==========================================
 
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-UFTP Client 1.9.2 (released MMM DD, 2024)
+UFTP Client 1.9.2 (released Jul 22, 2024)
 -----------------------------------------
  - fix: 'cp': don't try to set modification time without
    "--preserve" option
  - fix: only warn if setting modification time fails
+ - fix: remove unneeded slf4j jars from release
 
 UFTP Client 1.9.1 (released May 14, 2024)
 -----------------------------------------
