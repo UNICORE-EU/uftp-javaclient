@@ -10,7 +10,7 @@
   <parent>
     <groupId>eu.unicore</groupId>
     <artifactId>unicore-parent</artifactId>
-    <version>2.3</version>
+    <version>3.0.1</version>
   </parent>
 
   <scm>
@@ -24,20 +24,20 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <auth.version>2.9.0</auth.version>
-    <use.version>5.0.2</use.version>
-    <core.version>2.20.0</core.version>
+    <use.version>5.1.0</use.version>
+    <core.version>2.20.1</core.version>
     <jsch.version>0.0.9</jsch.version>
     <jnr.version>0.38.22</jnr.version>
     <jline.version>3.26.3</jline.version>
     <cli.version>1.8.0</cli.version>
     <json.version>20240303</json.version>
     <gson.version>2.11.0</gson.version>
-    <log4j.version>2.20.0</log4j.version>
+    <log4j.version>2.23.1</log4j.version>
 
     <packman.enabled/>
     <package.version>${project.version}</package.version>
     <package.release>1</package.release>
-    <automatic.module.name>${groupId}.client</automatic.module.name>
+    <automatic.module.name>${project.groupId}.client</automatic.module.name>
   </properties>
 
   <repositories>
@@ -50,9 +50,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.2</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.11.0</version>
     </dependency>
     <dependency>
       <groupId>eu.unicore.services</groupId>

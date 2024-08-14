@@ -1,13 +1,13 @@
 package eu.unicore.uftp.standalone.commands;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.BaseServiceTest;
@@ -17,7 +17,7 @@ public class TestShare extends BaseServiceTest {
 	
 	static File testsDir;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		testsDir = new File("target", "testdata");
 		FileUtils.deleteQuietly(testsDir);

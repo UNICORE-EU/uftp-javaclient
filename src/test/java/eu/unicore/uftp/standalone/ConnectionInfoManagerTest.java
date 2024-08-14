@@ -1,13 +1,13 @@
 package eu.unicore.uftp.standalone;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URISyntaxException;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.services.rest.client.UsernamePassword;
 
@@ -164,7 +164,7 @@ public class ConnectionInfoManagerTest {
 			String p = paths[i];
 			mainUri = String.format(uriFormatingString, scheme, host, port, p);
 			instance.init(mainUri);
-			assertEquals("Fail at index "+i, baseDirs[i], instance.getBasedir());
+			assertEquals(baseDirs[i], instance.getBasedir(), "Fail at index "+i);
 		}
 	}
 

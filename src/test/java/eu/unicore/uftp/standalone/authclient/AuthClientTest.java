@@ -1,34 +1,23 @@
 
 package eu.unicore.uftp.standalone.authclient;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.nio.file.Path;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.services.rest.client.IAuthCallback;
 import eu.unicore.services.rest.client.UsernamePassword;
-import junit.framework.TestCase;
 
 /**
  *
  * @author jj
  */
-public class AuthClientTest extends TestCase {
-    
-    public AuthClientTest(String testName) {
-        super(testName);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
+public class AuthClientTest {
+
     @Test
     public void testGetRequest() {
         System.out.println("getRequest");

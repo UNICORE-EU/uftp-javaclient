@@ -4,8 +4,8 @@ import java.io.File;
 import java.net.InetAddress;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import eu.unicore.services.Kernel;
 import eu.unicore.uftp.server.UFTPServer;
@@ -16,7 +16,7 @@ public abstract class BaseServiceTest {
 
 	protected static UFTPServer server;
 	protected static Thread serverThread;
-	
+
 	protected static int cmdPort = 63321;
 	protected static int listenPort = 63320;
 
@@ -27,12 +27,12 @@ public abstract class BaseServiceTest {
 	public String getAuthURL(String filename) {
 		return getInfoURL()+"/TEST:"+filename;
 	}
-	
+
 	public String getShareURL() {
 		return "http://localhost:9001/rest/share/TEST";
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void startServers() throws Exception {
 		FileUtils.deleteQuietly(new File("target","data"));
 		InetAddress host = InetAddress.getByName("localhost");
@@ -43,7 +43,7 @@ public abstract class BaseServiceTest {
 		authServer.startSynchronous();
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void stopServers() throws Exception {
 		server.stop();
 		try {

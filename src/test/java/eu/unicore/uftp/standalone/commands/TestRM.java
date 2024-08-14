@@ -1,13 +1,13 @@
 package eu.unicore.uftp.standalone.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.services.rest.client.UsernamePassword;
 import eu.unicore.uftp.standalone.BaseServiceTest;
@@ -20,7 +20,7 @@ public class TestRM extends BaseServiceTest {
 	ClientFacade client ;
 	File testsDir;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		client = new ClientFacade(
 				new ConnectionInfoManager(new UsernamePassword("demouser", "test123")));

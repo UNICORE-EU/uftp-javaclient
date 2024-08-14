@@ -1,10 +1,10 @@
 package eu.unicore.uftp.standalone;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.uftp.standalone.commands.ICommand;
 

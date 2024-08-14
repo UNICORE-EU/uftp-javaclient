@@ -1,14 +1,15 @@
 package eu.unicore.uftp.standalone.commands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.services.rest.client.UsernamePassword;
 import eu.unicore.uftp.dpc.Utils;
@@ -22,7 +23,7 @@ public class TestUCP extends BaseServiceTest {
 	ClientFacade client ;
 	File testsDir;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		client = new ClientFacade(
 				new ConnectionInfoManager(new UsernamePassword("demouser", "test123")));
@@ -109,12 +110,14 @@ public class TestUCP extends BaseServiceTest {
     	}
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testFailingDownload() throws Exception {
         String nonExistingFile = "/some/path/file1.dat";
         UCP ucp = new UCP();
 		ucp.client = client;
-		ucp.cp(new String[]{getAuthURL(nonExistingFile)}, "/tmp/filexxx.dat");
+		assertThrows(IOException.class, ()-> {
+			ucp.cp(new String[]{getAuthURL(nonExistingFile)}, "/tmp/filexxx.dat"); 
+		});
     }
 
     @Test
