@@ -10,28 +10,14 @@ import org.json.JSONObject;
  */
 public interface AuthClient {
 
-    AuthResponse connect(String path) throws Exception;
-
-    /** create session in default base directory **/
-    default AuthResponse createSession() throws Exception {
-        return createSession(null);
-    }
-
-    /** create session in the given base directory **/
-    default AuthResponse createSession(String baseDir) throws Exception {
-    	return createSession(baseDir, false);
-    }
-
-    /** create persistent session in the given base directory **/
-    AuthResponse createSession(String baseDir, boolean persistent) throws Exception;
+	/**
+     * perform auth handshake for access to the given path
+     */
+    public AuthResponse connect(String path) throws Exception;
     
-    JSONObject getInfo() throws Exception;
+    public JSONObject getInfo() throws Exception;
     
-    default String parseInfo(JSONObject obj, String infoURL) throws JSONException {
-    	return "";
-    }
+    public String parseInfo(JSONObject obj, String infoURL) throws JSONException;
 
-    default String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception {
-    	return "not implemented yet";
-    }
+    public String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception;
 }

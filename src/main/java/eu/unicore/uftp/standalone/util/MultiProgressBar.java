@@ -2,6 +2,7 @@ package eu.unicore.uftp.standalone.util;
 
 import java.io.Closeable;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
@@ -235,9 +236,7 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 
 	public void close(){
 		System.out.println();
-		try{
-			if(terminal!=null)terminal.close();
-		}catch(Exception ex) {}
+		IOUtils.closeQuietly(terminal);
 	}
 
 }

@@ -159,7 +159,7 @@ public class ConnectionInfoManagerTest {
 	@Test
 	public void testBaseDir() throws Exception {
 		String[] paths = new String[] {".foo", "/opt","/opt/"};
-		String[] baseDirs = new String[] {null, "/", "/opt"};
+		String[] baseDirs = new String[] {"", "/", "/opt/"};
 		for(int i = 0; i<paths.length; i++) {
 			String p = paths[i];
 			mainUri = String.format(uriFormatingString, scheme, host, port, p);

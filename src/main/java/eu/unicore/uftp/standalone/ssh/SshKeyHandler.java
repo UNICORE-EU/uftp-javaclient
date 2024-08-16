@@ -35,13 +35,13 @@ public class SshKeyHandler {
 	// will use agent with a user-selected identity
 	private boolean selectIdentity = false;
 
-	private boolean preferJWT = false;
+	private boolean preferJWT = true;
 
 	public SshKeyHandler(File privateKey, String userName, String token) {
 		this.privateKey = privateKey;
 		this.userName = userName;
 		this.token = token;
-		this.preferJWT = Boolean.parseBoolean(Utils.getProperty("UFTP_SSH_PREFER_JWT", "false"));
+		this.preferJWT = Boolean.parseBoolean(Utils.getProperty("UFTP_SSH_PREFER_JWT", "true"));
 	}
 
 	public void setVerbose(boolean verbose) {
@@ -66,20 +66,20 @@ public class SshKeyHandler {
 		this.selectIdentity = true;
 	}
 
-	public void preferJWT() {
-		this.preferJWT = true;
+	public void setPreferJWT(boolean preferJWT) {
+		this.preferJWT = preferJWT;
 	}
 
 	protected IAuthCallback create() throws GeneralSecurityException, IOException {
 		if(privateKey == null || !privateKey.exists()){
-	                 throw new IOException("No private key found!");
+			throw new IOException("No private key found!");
 		}
 		final PasswordSupplier pf = new PasswordSupplier() {
 			private char[] _p;
 			@Override
 			public char[] getPassword() {
 				if(_p==null) {
-					String pwd = System.getenv("UFTP_PASSWORD");
+					String pwd = Utils.getProperty("UFTP_PASSWORD", null);
 					if(pwd!=null) {
 						_p = pwd.toCharArray();
 					}

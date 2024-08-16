@@ -41,18 +41,15 @@ public class AuthserverClient implements AuthClient {
 		this.client = client;
 	}
 
+	@Override
 	public AuthResponse connect(String path) throws Exception {
-		return doConnect(path, false);
-	}
-
-	private AuthResponse doConnect(String path,boolean persistent) throws Exception {
 		byte[] key = client.createEncryptionKey();
 		String base64Key = key!=null? Utils.encodeBase64(key) : null;
 		String encryptionAlgorithm = client.getEncryptionAlgorithm()!=null ?
 				client.getEncryptionAlgorithm().toString() : null;
 		AuthRequest authRequest = createRequestObject(path,
 				client.getStreams(), base64Key, encryptionAlgorithm, client.isCompress(),
-				client.getGroup(), client.getClientIP(), persistent);
+				client.getGroup(), client.getClientIP(), true);
 		JSONObject request = new JSONObject(gson.toJson(authRequest));
 		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(),authData);
 		try(ClassicHttpResponse res = bc.post(request)){
@@ -64,16 +61,8 @@ public class AuthserverClient implements AuthClient {
 			return response;
 		}
 	}
-	
-	@Override
-	public AuthResponse createSession(String baseDir, boolean persistent) throws Exception {
-		if(baseDir!=null && !baseDir.endsWith("/")) {
-			baseDir = baseDir+"/";
-		}
-		if(baseDir==null)baseDir="";
-		return doConnect(baseDir, persistent);
-	}
 
+	@Override
 	public JSONObject getInfo() throws Exception {
 		String infoURL = makeInfoURL(uri);
 		BaseClient bc = new BaseClient(infoURL,
@@ -82,6 +71,7 @@ public class AuthserverClient implements AuthClient {
 		return bc.getJSON();
 	}
 	
+	@Override
 	public String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception {
 		String tokenURL = makeIssueTokenURL(uri);
 		URIBuilder b = new URIBuilder(tokenURL);

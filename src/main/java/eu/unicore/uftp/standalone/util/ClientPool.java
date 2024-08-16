@@ -101,6 +101,7 @@ public class ClientPool implements Closeable {
 		System.out.println(new ParameterizedMessage(msg, params).getFormattedMessage());
 	}
 
+
 	public static class UFTPClientThread extends Thread {
 
 		final UFTPSessionClient client;
@@ -115,14 +116,7 @@ public class ClientPool implements Closeable {
 		}
 
 		public UFTPSessionClient getClient(){
-			if(client!=null)return client;
-			else {
-				try{
-					return cf.doConnect(uri);
-				}catch(Exception e) {
-					throw new RuntimeException("Cannot connect to <"+uri+">", e);
-				}
-			}
+			return client;
 		}
 	}
 
@@ -172,10 +166,6 @@ public class ClientPool implements Closeable {
 				sc.setProgressListener(pb);
 			}
 			return sc;
-		}
-
-		public TransferTracker getTransferTracker() {
-			return transferTracker;
 		}
 
 		public void setTransferTracker(TransferTracker transferTracker) {

@@ -54,14 +54,9 @@ public class ClientFacade {
 	}
 
 	private AuthResponse initSession(AuthClient authClient) throws Exception {
-		String baseDir = connectionManager.getBasedir();
-		if(connectionManager.getURI().contains("/rest/access/")) {
-			baseDir = connectionManager.getPath();
-			return authClient.connect(baseDir);
-		}
-		else {
-			return authClient.createSession(baseDir);
-		}
+		String path = connectionManager.getURI().contains("/rest/access/")?
+				connectionManager.getPath() : connectionManager.getBasedir();
+		return authClient.connect(path);
 	}
 
 	/**

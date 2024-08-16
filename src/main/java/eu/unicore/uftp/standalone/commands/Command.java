@@ -122,7 +122,7 @@ public abstract class Command implements ICommand {
 			password = tokens!=null && tokens.length>1 ? tokens[1] : null;
 			if(password == null){
 				if(line.hasOption('P')){
-					password = System.getenv("UFTP_PASSWORD");
+					password = Utils.getProperty("UFTP_PASSWORD", null);
 					if(password==null) {
 						password = ConsoleUtils.readPassword("Password:");
 					}
@@ -160,8 +160,8 @@ public abstract class Command implements ICommand {
 				sshIdentity = line.getOptionValue('i');
 			}
 		}
-		if(line.hasOption('I')){
-			clientIP = line.getOptionValue('I');
+		if(line.hasOption('X')){
+			clientIP = line.getOptionValue('X');
 		}
 	}
 
@@ -174,25 +174,24 @@ public abstract class Command implements ICommand {
 	protected abstract void run(ClientFacade facade) throws Exception;
 
 	public boolean runCommand() throws Exception {
-		boolean OK = true;
 		if(line.hasOption("h")) {
 			printUsage();
-			return OK;
+			return true;
 		}
 		try{
 			ConnectionInfoManager cim = new ConnectionInfoManager(getAuthData());
 			ClientFacade facade = new ClientFacade(cim);
 			setOptions(facade);
 			run(facade);
+			return true;
 		}catch(Exception ex) {
 			if(verbose) {
 				ex.printStackTrace();
 				System.err.println();
 			}
 			System.err.println(Log.createFaultMessage("ERROR", ex));
-			OK = false;
+			return false;
 		}
-		return OK;
 	}
 	
 	/**

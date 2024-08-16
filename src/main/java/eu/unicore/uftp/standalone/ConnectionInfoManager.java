@@ -156,6 +156,13 @@ public class ConnectionInfoManager {
         auth = auth + paths[0];
         parameters.put("path", path);
         parameters.put("auth", auth);
+        // make sure basedir is sane
+        String basedir = parameters.get("basedir");
+        if(basedir!=null && !basedir.endsWith("/")) {
+			basedir = basedir+"/";
+		}
+		if(basedir==null)basedir="";
+		parameters.put("basedir", basedir);
     }
     
     public AuthClient getAuthClient(ClientFacade client) throws Exception {

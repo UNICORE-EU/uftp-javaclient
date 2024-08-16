@@ -66,8 +66,5 @@ public class OIDCAgentProxy {
 		int fd = (int)(m.invoke(null, ProtocolFamily.PF_UNIX, Sock.SOCK_STREAM, 0));
 		return UnixSocketChannel.fromFD(fd);
 	}
-	
-	protected void foo(){
-	}
 
 }

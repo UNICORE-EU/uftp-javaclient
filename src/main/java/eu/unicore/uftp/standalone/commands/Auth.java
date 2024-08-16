@@ -8,7 +8,7 @@ import eu.unicore.uftp.standalone.authclient.AuthResponse;
 /**
  * Only authenticate the user and print out connect info 
  * for use with other tools such as 'ftp' or 'curl'
- * 
+ *
  * @author schuller
  */
 public class Auth extends DataTransferCommand {
@@ -27,7 +27,7 @@ public class Auth extends DataTransferCommand {
 		String uri = fileArgs[0];
 		mgr.init(uri);
 		AuthClient auth = mgr.getAuthClient(client);
-		AuthResponse res = auth.createSession(mgr.getBasedir(), true);
+		AuthResponse res = auth.connect(mgr.getBasedir());
 		if(!res.success){
 			System.out.println("Error: "+res.reason);
 		}
@@ -40,6 +40,7 @@ public class Auth extends DataTransferCommand {
 	public String getArgumentDescription() {
 		return "<Server-URL>[:/path/to/initial/directory]";
 	}
+
 	@Override
 	public String getSynopsis() {
 		return "Authenticates the user and prints out connect info. Optionally specify the initial directory for the FTP session.";

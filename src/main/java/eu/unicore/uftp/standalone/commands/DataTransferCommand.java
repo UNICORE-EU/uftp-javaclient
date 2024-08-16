@@ -3,6 +3,7 @@ package eu.unicore.uftp.standalone.commands;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 
+import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.uftp.standalone.util.UnitParser;
@@ -66,13 +67,12 @@ public abstract class DataTransferCommand extends RangedCommand {
 		if (line.hasOption('E')) {
 			encrypt = true;
 			try{
-				algo = System.getenv("UFTP_ENCRYPTION_ALGORITHM");
-				if(algo==null) algo="Blowfish";
+				algo = Utils.getProperty("UFTP_ENCRYPTION_ALGORITHM", "Blowfish");
 				algo = algo.toUpperCase();
 				keylength = 56;
 				if("aes".equalsIgnoreCase(algo)) {
 					int l = 32;
-					String aesLen = System.getenv("UFTP_ENCRYPTION_AES_KEYSIZE");
+					String aesLen = Utils.getProperty("UFTP_ENCRYPTION_AES_KEYSIZE", null);
 					if(aesLen !=null) {
 						l = Integer.parseInt(aesLen);
 					}

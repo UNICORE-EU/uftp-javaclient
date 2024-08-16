@@ -29,7 +29,7 @@
     <jsch.version>0.0.9</jsch.version>
     <jnr.version>0.38.22</jnr.version>
     <jline.version>3.26.3</jline.version>
-    <cli.version>1.8.0</cli.version>
+    <cli.version>1.9.0</cli.version>
     <json.version>20240303</json.version>
     <gson.version>2.11.0</gson.version>
     <log4j.version>2.23.1</log4j.version>
@@ -53,6 +53,7 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>5.11.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>eu.unicore.services</groupId>

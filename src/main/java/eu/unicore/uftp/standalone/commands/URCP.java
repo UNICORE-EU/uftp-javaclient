@@ -6,6 +6,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 
 import eu.unicore.uftp.client.UFTPSessionClient;
+import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthResponse;
@@ -82,7 +83,7 @@ public class URCP extends DataTransferCommand {
 	public void rcp(String source, String target, ClientFacade client) throws Exception {
 		boolean remoteSource = ConnectionInfoManager.isRemote(source);
 		boolean remoteTarget = ConnectionInfoManager.isRemote(target);
-		boolean receive = !Boolean.parseBoolean(System.getenv("UFTP_RCP_USE_SEND_FILE"));
+		boolean receive = !Boolean.parseBoolean(Utils.getProperty("UFTP_RCP_USE_SEND_FILE", null));
 		if(!remoteSource && !remoteTarget){
 			String error = String.format("Unable to handle [%s, %s] combination. "
 					+ "At least one must be a URL.", source, target);
