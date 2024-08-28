@@ -5,14 +5,14 @@ This repository contains the source code for the
 
 ## Download and installation
 
-Working binaries can be downloaded from SourceForge
-https://sourceforge.net/projects/unicore/files/
+Working binaries can be downloaded via
+[GitHub releases](https://github.com/UNICORE-EU/uftp-javaclient/releases)
 
-To run, you'll also need a Java runtime (version 11 or later).
+To run, you'll need a Java runtime (version 11 or later).
 
 ## Usage
 
-See the manual at https://uftp-docs.readthedocs.io/en/latest/user-docs/uftp-client/index.html
+See the [manual](https://uftp-docs.readthedocs.io/en/latest/user-docs/uftp-client/index.html)
 
 ## Building from source
 
