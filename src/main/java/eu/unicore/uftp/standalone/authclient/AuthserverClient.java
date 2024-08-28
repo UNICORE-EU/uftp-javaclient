@@ -51,7 +51,7 @@ public class AuthserverClient implements AuthClient {
 				client.getStreams(), base64Key, encryptionAlgorithm, client.isCompress(),
 				client.getGroup(), client.getClientIP(), true);
 		JSONObject request = new JSONObject(gson.toJson(authRequest));
-		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(),authData);
+		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
 		try(ClassicHttpResponse res = bc.post(request)){
 			AuthResponse response = gson.fromJson(EntityUtils.toString(res.getEntity()), AuthResponse.class);
 			if(key!=null) {
@@ -86,13 +86,12 @@ public class AuthserverClient implements AuthClient {
 		}
 	}
 
-	static String crlf = System.getProperty("line.separator");
-	
 	@Override
 	public String parseInfo(JSONObject info, String url) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		String infoURL = makeInfoURL(url);
 		try(Formatter f = new Formatter(sb, null)){
+			String crlf = System.getProperty("line.separator");
 			f.format("Client identity:    %s%s", getID(info),crlf);
 			f.format("Client auth method: %s%s", authData.getType(),crlf);
 			f.format("Auth server type:   AuthServer v%s%s", getServerVersion(info), crlf);

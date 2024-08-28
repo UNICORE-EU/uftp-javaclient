@@ -21,7 +21,7 @@ public abstract class BaseServiceTest {
 	protected static int listenPort = 63320;
 
 	public String getInfoURL() {
-		return "http://localhost:9001/rest/auth";
+		return "https://localhost:9001/rest/auth";
 	}
 
 	public String getAuthURL(String filename) {
@@ -29,7 +29,7 @@ public abstract class BaseServiceTest {
 	}
 
 	public String getShareURL() {
-		return "http://localhost:9001/rest/share/TEST";
+		return "https://localhost:9001/rest/share/TEST";
 	}
 
 	@BeforeAll

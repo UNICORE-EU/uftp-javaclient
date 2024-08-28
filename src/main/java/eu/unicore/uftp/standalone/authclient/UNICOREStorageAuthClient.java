@@ -42,7 +42,8 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		JSONObject request = createRequestObject(path, base64Key, client.isCompress(), client.getClientIP(), true);
 		try(ClassicHttpResponse res = bc.post(request)){
 			JSONObject reply = bc.asJSON(res);
-			AuthResponse response = new AuthResponse(true, "OK");
+			AuthResponse response = new AuthResponse();
+			response.reason = "OK";
 			response.serverHost = reply.getString("uftp.server.host");
 			response.serverPort = Integer.parseInt(reply.getString("uftp.server.port"));
 			if(key!=null) {
@@ -60,14 +61,12 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		BaseClient bc = new BaseClient(infoURL, HttpClientFactory.getClientConfiguration(), authData);
 		return bc.getJSON();
 	}
-	
-	static String crlf = System.getProperty("line.separator");
-	
-	
+
 	@Override
 	public String parseInfo(JSONObject info, String infoURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		try(Formatter f = new Formatter(sb, null)){
+			String crlf = System.getProperty("line.separator");
 			f.format("Client identity:    %s%s", getID(info),crlf);
 			f.format("Client auth method: %s%s", authData.getType(),crlf);
 			f.format("Auth server type:   UNICORE/X v%s%s", getServerVersion(info), crlf);

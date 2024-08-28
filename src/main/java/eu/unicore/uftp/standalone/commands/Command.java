@@ -92,7 +92,7 @@ public abstract class Command implements ICommand {
 				.desc("Use oidc-agent with the specified account")
 				.required(false)
 				.hasArg()
-				.build());
+				.build(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("P").longOpt("password")
 				.desc("Interactively query for a missing password")
 				.required(false)

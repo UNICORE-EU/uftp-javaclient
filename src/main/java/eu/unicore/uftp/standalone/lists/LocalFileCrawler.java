@@ -6,19 +6,15 @@ import java.io.IOException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.apache.logging.log4j.Logger;
 
 import eu.unicore.uftp.client.FileInfo;
 import eu.unicore.uftp.client.UFTPSessionClient;
-import eu.unicore.util.Log;
 
 /**
  *
  * @author jj
  */
 public class LocalFileCrawler extends FileCrawler {
-
-	private static final Logger logger = Log.getLogger(Log.CLIENT, LocalFileCrawler.class);
 
 	private String path;
 
@@ -95,9 +91,7 @@ public class LocalFileCrawler extends FileCrawler {
 			String target = remoteDirectory + "/" + localFile.getName();
 			if(localFile.isDirectory()){
 				if(RecursivePolicy.RECURSIVE!=policy){
-					String msg = "uftp: omitting directory '"+localFile+"'";
-					System.err.println(msg);
-					logger.debug(msg);
+					System.err.println("uftp: omitting directory '"+localFile+"'");
 				}else{
 					safeMkDir(target);
 					crawl(localFile.getPath(), target, true);
@@ -121,10 +115,11 @@ public class LocalFileCrawler extends FileCrawler {
 		}
     }
 
-    /**
+    /*
      * get matching files and directories
      * 
      * @param path - path to list from
+     * @param all - if false, apply filter
      */
     private File[] getFiles(String path, boolean all){
     	return all ? new File(path).listFiles() : new File(path).listFiles(filter);

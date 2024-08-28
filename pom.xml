@@ -23,7 +23,7 @@
     <compiler.fork>false</compiler.fork>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <auth.version>2.9.0</auth.version>
+    <auth.version>3.0.0</auth.version>
     <use.version>5.1.0</use.version>
     <core.version>2.20.1</core.version>
     <jsch.version>0.0.9</jsch.version>
@@ -40,19 +40,17 @@
     <automatic.module.name>${project.groupId}.client</automatic.module.name>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>unicore.eu</id>
-      <name>UNICORE repository</name>
-      <url>https://unicore-dev.zam.kfa-juelich.de/maven</url>
-    </repository>
-  </repositories>
-
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
       <version>5.11.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>eu.unicore.uftp</groupId>
+      <artifactId>uftp-authserver</artifactId>
+      <version>${auth.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -71,12 +69,6 @@
       <version>${core.version}</version>
     </dependency>
     <dependency>
-      <groupId>eu.unicore.uftp</groupId>
-      <artifactId>uftp-authserver</artifactId>
-      <version>${auth.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>${gson.version}</version>
@@ -86,7 +78,6 @@
       <artifactId>commons-cli</artifactId>
       <version>${cli.version}</version>
      </dependency>
-
     <dependency>
       <groupId>org.jline</groupId>
       <artifactId>jline</artifactId>
