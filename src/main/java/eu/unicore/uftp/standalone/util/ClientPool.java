@@ -171,7 +171,7 @@ public class ClientPool implements Closeable {
 			UFTPClientThread t = (UFTPClientThread)Thread.currentThread();
 			UFTPSessionClient sc = t.getClient();
 			if(pb!=null) { 
-				pb.registerNew(getId(), getDataSize(), transferTracker);
+				pb.registerNew(transferTracker);
 				sc.setProgressListener(pb);
 			}
 			return sc;

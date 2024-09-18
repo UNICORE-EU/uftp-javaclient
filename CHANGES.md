@@ -4,9 +4,11 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-UFTP Client 1.9.3 (released MMM dd, 2024)
+UFTP Client 2.0.0 (released Sep dd, 2024)
 -----------------------------------------
-
+ - new feature: re-written progress and performance meter for 'cp',
+   active if the '-D' option is given
+ - version updates, code cleanup
 
 UFTP Client 1.9.2 (released Jul 22, 2024)
 -----------------------------------------

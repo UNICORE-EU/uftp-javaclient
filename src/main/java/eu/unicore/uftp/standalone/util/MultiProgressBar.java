@@ -32,7 +32,6 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	// data indexed per thread
 	private final int maxThreads;
 	private final long[] threadIds;
-	private final String[] identifiers;
 	private final long startedAt[];
 	private final long have[];
 	private final double rate[];
@@ -43,12 +42,10 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 
 	public MultiProgressBar(int maxThreads) throws IOException {
 		this.maxThreads = maxThreads;
-		//this.verbose = verbose;
 		this.threadIds = new long[maxThreads];
 		this.startedAt = new long[maxThreads];
 		this.have = new long[maxThreads];
 		this.rate = new double[maxThreads];
-		this.identifiers = new String[maxThreads];
 		this.trackers = new TransferTracker[maxThreads];
 		this.terminal = TerminalBuilder.terminal();
 		width = terminal.getWidth();
@@ -64,14 +61,12 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	 * register a new file transfer 
 	 * NOTE: this must be called from a worker thread!
 	 */
-	public synchronized void registerNew(String identifier, long length, TransferTracker tracker){
+	public synchronized void registerNew(TransferTracker tracker){
 		int i = getThreadIndex();
-		identifiers[i] = identifier;
 		rate[i] = 0;
 		have[i] = 0;
 		trackers[i] = tracker;
 		startedAt[i] = System.currentTimeMillis();
-		setTransferSize(length);
 		if(!runningTransfers.contains(tracker)) {
 			runningTransfers.add(tracker);
 		}
@@ -206,7 +201,6 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	}
 
 	private void cleanup(int i) {
-		identifiers[i] = null;
 		rate[i] = 0;
 		have[i] = 0;
 		trackers[i] = null;
