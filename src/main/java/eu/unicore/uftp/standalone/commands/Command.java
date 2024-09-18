@@ -357,19 +357,17 @@ public abstract class Command implements ICommand {
 	}
 
 	/**
-	 * verbose log to console and to the log4j logger
-	 * 
+	 * verbose log to console
+	 *
 	 * @param msg - log4j-style message
 	 * @param params - message parameters
 	 */
 	public void verbose(String msg, Object ... params) {
-		if(!verbose)return;
-		String f = new ParameterizedMessage(msg, params).getFormattedMessage();
-		System.out.println(f);
+		if(verbose)message(msg, params);
 	}
 
 	/**
-	 * print message to stderr and to the log4j logger (on error level)
+	 * print message to stderr
 	 * 
 	 * @param msg - log4j-style message
 	 * @param params - message parameters

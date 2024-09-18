@@ -272,7 +272,7 @@ public class UCP extends DataTransferCommand {
 		int width = String.valueOf(numChunks).length();
 		String localFileID = local.getPath();
 		String shortID = localFileID+"->"+remotePath;
-		TransferTracker ti = new TransferTracker(shortID, total,
+		TransferTracker ti = new TransferTracker(remotePath, total,
 				numChunks, new AtomicInteger(numChunks), new AtomicLong(0));
 		for(int i = 0; i<numChunks; i++){
 			final long end = last;
@@ -391,7 +391,7 @@ public class UCP extends DataTransferCommand {
 				remotePath, local, total, numChunks, chunkSize);
 		int width = String.valueOf(numChunks).length();
 		String shortID = remotePath+"->"+local;
-		TransferTracker ti = new TransferTracker(shortID, total,
+		TransferTracker ti = new TransferTracker(local, total,
 				numChunks, new AtomicInteger(numChunks), new AtomicLong(0));
 		for(int i = 0; i<numChunks; i++){
 			final long first = start;

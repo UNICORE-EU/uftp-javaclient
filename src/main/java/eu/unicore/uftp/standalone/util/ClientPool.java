@@ -38,7 +38,7 @@ public class ClientPool implements Closeable {
 
 	final boolean verbose;
 
-	private final MultiProgressBar pb;
+	private MultiProgressBar pb = null;
 
 	public ClientPool(List<Pair<TransferTask,Future<Boolean>>> tasks, int poolSize, ClientFacade clientFacade, String uri, boolean verbose, boolean showPerformance) {
 		this.tasks = tasks;
@@ -46,8 +46,16 @@ public class ClientPool implements Closeable {
 		this.uri = uri;
 		this.poolSize = poolSize;
 		this.verbose = verbose;
-		this.pb = showPerformance ?  new MultiProgressBar(poolSize, verbose) : null;
-		es = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
+		if(showPerformance) {
+			try{
+				this.pb = new MultiProgressBar(poolSize);
+			}catch(IOException ioe) {
+				if(verbose) {
+					System.err.println("Cannot setup progress bar: "+Log.getDetailMessage(ioe));
+				}
+			}
+		}
+		this.es = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
 
 			boolean createNewThreads = true;
 
@@ -82,6 +90,7 @@ public class ClientPool implements Closeable {
 				f.get();
 			}catch(Exception e){
 				message(Log.createFaultMessage("ERROR in <"+t.getId()+">", e));
+				e.printStackTrace();
 			}
 		});
 		clients.forEach(sc -> IOUtils.closeQuietly(sc));
@@ -186,7 +195,7 @@ public class ClientPool implements Closeable {
 			}
 			catch(Exception e) {
 				if(pb!=null) {
-					pb.closeWithError(Log.getDetailMessage(e));
+					pb.closeCurrentThread(Log.getDetailMessage(e));
 				}
 				throw new RuntimeException(e);
 			}
@@ -195,23 +204,39 @@ public class ClientPool implements Closeable {
 		@Override
 		public void close() {
 			if(pb!=null) {
-				pb.closeSingle();
+				pb.closeCurrentThread();
 			}
 		}
 	}
 
+	/*
+	 * one of these is created per transferred file
+	 */
 	public static class TransferTracker {
+		private static final AtomicInteger transferIdGen = new AtomicInteger(0);
+		public final int transferID = transferIdGen.incrementAndGet();
+
 		public final String file;
 		public final long size;
 		public final AtomicLong start;
 		public final int numChunks;
 		public final AtomicInteger chunkCounter;
+		private long bytesTransferred;
+
 		public TransferTracker(String file, long size, int numChunks, AtomicInteger chunkCounter, AtomicLong start) {
 			this.file = file;
 			this.size = size;
 			this.chunkCounter = chunkCounter;
 			this.start = start;
 			this.numChunks = numChunks;
+		}
+
+		public void addBytesTransferred(long bytes) {
+			bytesTransferred+=bytes;
+		}
+
+		public long getBytesTransferred() {
+			return bytesTransferred;
 		}
 	}
 }
