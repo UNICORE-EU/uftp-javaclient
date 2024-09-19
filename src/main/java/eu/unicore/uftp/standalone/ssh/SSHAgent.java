@@ -3,6 +3,8 @@ package eu.unicore.uftp.standalone.ssh;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.util.StringTokenizer;
@@ -22,6 +24,9 @@ import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 
 import eu.unicore.uftp.dpc.Utils;
+import jnr.unixsocket.UnixSocket;
+import jnr.unixsocket.UnixSocketAddress;
+import jnr.unixsocket.UnixSocketChannel;
 
 /**
  * support for SSH-Agent using jsch-agent-proxy<br/>
@@ -38,32 +43,16 @@ public class SSHAgent {
 	private static boolean verbose = false;
 
 	Identity id = null;
-	
+
 	public SSHAgent() throws Exception {
 		if(!isAgentAvailable())throw new IOException("SSH-Agent is not available");
-		USocketFactory udsf = null;
-		String[] attempts = new String[]{
-				"com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory",
-		"com.jcraft.jsch.agentproxy.usocket.NCUSocketFactory"};
-
-		// if some smart ass has set the 'jna.nosys' property, we honor it, 
-		// otherwise we set it to true, which usually works better
-		if(System.getProperty("jna.nosys")==null){
-			System.setProperty("jna.nosys","true");
-		}
-		for(String className: attempts){
-			try{
-				udsf = (USocketFactory)(Class.forName(className).getConstructor().newInstance());
-				ap = new AgentProxy(new SSHAgentConnector(udsf));
-				if(!ap.isRunning())throw new IOException("Error communicating with ssh-agent");
-			}catch(Exception ex){}
-		}
-		if(ap==null || !ap.isRunning())throw new IOException("Error communicating with ssh-agent");
+		ap = new AgentProxy(new SSHAgentConnector(new MyFactory()));
+		if(!ap.isRunning())throw new IOException("Error communicating with ssh-agent");
 	}
 
 	/**
 	 * choose the identity - if not available in the agent, an exception is thrown
-	 * 
+	 *
 	 * @param keyFile
 	 * @throws IOException
 	 */
@@ -82,7 +71,7 @@ public class SSHAgent {
 		st.nextToken(); // ignored
 		String base64 = st.nextToken();
 		byte[] bytes = Base64.decodeBase64(base64);
-		
+
 		for(int i=0; i<ids.length; i++) {
 			Identity id = ids[i];
 			if(Arrays.areEqual(bytes, id.getBlob())){
@@ -91,7 +80,7 @@ public class SSHAgent {
 		}
 		throw new IOException("No matching identity found in agent");
 	}
-	
+
 	public void setVerbose(boolean verboseS) {
 		verbose = verboseS;
 	}
@@ -160,6 +149,52 @@ public class SSHAgent {
 		os.writeObject(seq);
 		os.close();
 		return bos.toByteArray();
+	}
+
+
+	public static class MySocket extends USocketFactory.Socket {
+
+		private final UnixSocket sock;
+		private final InputStream is;
+		private final OutputStream os;
+
+		public int readFull(byte[] buf, int s, int len) throws IOException {
+			int _len = len;
+			while(len>0){
+				int j = is.read(buf, s, len);
+				if(j<=0)
+					return -1;
+				if(j>0){
+					s+=j;
+					len-=j;
+				}
+			}
+			return _len;
+		}
+
+		public void write(byte[] buf, int s, int len) throws IOException {
+			os.write(buf, s, len);
+			os.flush();
+		}
+
+		MySocket(UnixSocket sock) throws IOException {
+			this.sock = sock;
+			this.is = sock.getInputStream();
+			this.os = sock.getOutputStream();
+		}
+
+		public void close() throws IOException {
+			sock.close();
+		}
+	}
+
+	public static class MyFactory implements USocketFactory {
+		@Override
+		public Socket open(String path) throws IOException {
+			UnixSocketAddress addr = new UnixSocketAddress(path);
+			UnixSocket sock = UnixSocketChannel.open(addr).socket();
+			return new MySocket(sock);
+		}
 	}
 
 }

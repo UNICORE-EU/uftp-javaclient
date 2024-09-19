@@ -49,17 +49,15 @@ public class SshKeyHandler {
 	}
 
 	public IAuthCallback getAuthData() throws Exception {
-		IAuthCallback result = null;
 		if(SSHAgent.isAgentAvailable()){
 			try{
-				result = useAgent();
+				return useAgent();
 			}catch(Exception ex){
-				System.err.println(Log.createFaultMessage("WARNING: SSH agent is available, but there was an error when using it",ex));
+				System.err.println(Log.createFaultMessage("WARNING: Error trying to use SSH agent", ex));
+				System.setProperty("UFTP_NO_AGENT", "true");
 			}
 		}
-		if(result==null)result = create();
-		
-		return result;
+		return create();
 	}
 
 	public void selectIdentity() {
@@ -90,16 +88,14 @@ public class SshKeyHandler {
 				return _p;
 			}
 		};
-		IAuthCallback result = null;
 		if(preferJWT) {
-			result = new SSHKey(userName, privateKey, pf);
+			return new SSHKey(userName, privateKey, pf);
 		}
 		else {
 			SSHKeyUC sshauth = SSHUtils.createAuthData(privateKey, pf , token);
 			sshauth.username = userName;
-			result = sshauth;
+			return sshauth;
 		}
-		return result;
 	}
 
 	protected IAuthCallback useAgent() throws Exception {

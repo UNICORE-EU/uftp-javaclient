@@ -6,8 +6,9 @@ https://github.com/UNICORE-EU/uftp-javaclient/issues
 
 UFTP Client 2.0.0 (released Sep dd, 2024)
 -----------------------------------------
- - new feature: re-written progress and performance meter for 'cp',
-   active if the '-D' option is given
+ - new feature: re-written progress and performance display
+   for 'cp -D'
+ - fix: ssh-agent support not working on Mac (arm64)
  - version updates, code cleanup
 
 UFTP Client 1.9.2 (released Jul 22, 2024)

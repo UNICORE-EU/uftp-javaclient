@@ -85,16 +85,6 @@
     </dependency>
     <dependency>
       <groupId>com.jcraft</groupId>
-      <artifactId>jsch.agentproxy.usocket-nc</artifactId>
-      <version>${jsch.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.jcraft</groupId>
-      <artifactId>jsch.agentproxy.usocket-jna</artifactId>
-      <version>${jsch.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.jcraft</groupId>
       <artifactId>jsch.agentproxy.sshagent</artifactId>
       <version>${jsch.version}</version>
     </dependency>
