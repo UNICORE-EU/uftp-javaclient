@@ -54,6 +54,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.xmlbeans</groupId>
+      <artifactId>xmlbeans</artifactId>
+      <version>2.6.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>eu.unicore.services</groupId>
       <artifactId>use-restclient</artifactId>
       <version>${use.version}</version>

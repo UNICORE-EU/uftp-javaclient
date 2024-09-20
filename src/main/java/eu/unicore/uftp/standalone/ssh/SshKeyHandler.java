@@ -49,15 +49,19 @@ public class SshKeyHandler {
 	}
 
 	public IAuthCallback getAuthData() throws Exception {
+		IAuthCallback result = null;
 		if(SSHAgent.isAgentAvailable()){
 			try{
-				return useAgent();
+				result = useAgent();
 			}catch(Exception ex){
 				System.err.println(Log.createFaultMessage("WARNING: Error trying to use SSH agent", ex));
 				System.setProperty("UFTP_NO_AGENT", "true");
 			}
 		}
-		return create();
+		if(result==null) {
+			result = create();
+		}
+		return result;
 	}
 
 	public void selectIdentity() {

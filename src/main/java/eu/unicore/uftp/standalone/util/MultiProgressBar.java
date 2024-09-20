@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.io.IOUtils;
 import org.jline.terminal.Terminal;
@@ -38,7 +39,8 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	private final TransferTracker[] trackers;
 
 	// current list of active transfers
-	private final List<TransferTracker> runningTransfers = new ArrayList<>();
+	private final CopyOnWriteArrayList<TransferTracker> runningTransfers =
+			new CopyOnWriteArrayList<>();
 
 	public MultiProgressBar(int maxThreads) throws IOException {
 		this.maxThreads = maxThreads;
@@ -61,15 +63,13 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	 * register a new file transfer 
 	 * NOTE: this must be called from a worker thread!
 	 */
-	public synchronized void registerNew(TransferTracker tracker){
+	public void registerNew(TransferTracker tracker){
 		int i = getThreadIndex();
 		rate[i] = 0;
 		have[i] = 0;
 		trackers[i] = tracker;
 		startedAt[i] = System.currentTimeMillis();
-		if(!runningTransfers.contains(tracker)) {
-			runningTransfers.add(tracker);
-		}
+		runningTransfers.addIfAbsent(tracker);
 	}
 
 	@Override
@@ -174,22 +174,20 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 						);
 			} else lines.add("...");
 		}
-		synchronized(this){
-			for(int i=0;i<nLines; i++)terminal.puts(Capability.cursor_up);
-			terminal.puts(Capability.carriage_return);
-			for(String line: lines) {
-				terminal.writer().write(line);
-				terminal.writer().write(lineSep);
-			}
-			terminal.flush();
-			nLines = lines.size();
+		for(int i=0;i<nLines; i++)terminal.puts(Capability.cursor_up);
+		terminal.puts(Capability.carriage_return);
+		for(String line: lines) {
+			terminal.writer().write(line);
+			terminal.writer().write(lineSep);
 		}
+		terminal.flush();
+		nLines = lines.size();
 	}
 
 	private String getPerThreadPerformance(TransferTracker tt){
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<maxThreads;i++){
-			if(trackers[i]==null || tt.transferID!=trackers[i].transferID)continue;
+			if(!tt.equals(trackers[i]))continue;
 			if(rate[i]>0){
 				sb.append(String.format("%sB/s ", rateParser.getHumanReadable(rate[i])));
 			}

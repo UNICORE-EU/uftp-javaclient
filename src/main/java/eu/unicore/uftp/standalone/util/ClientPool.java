@@ -238,5 +238,13 @@ public class ClientPool implements Closeable {
 		public long getBytesTransferred() {
 			return bytesTransferred;
 		}
+
+		@Override
+		public boolean equals(Object other) {
+			if(other!=null && other instanceof TransferTracker) {
+				return ((TransferTracker)other).transferID == transferID;
+			}
+			return false;
+		}
 	}
 }
