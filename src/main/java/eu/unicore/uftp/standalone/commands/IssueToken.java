@@ -3,7 +3,7 @@ package eu.unicore.uftp.standalone.commands;
 import org.apache.commons.cli.Option;
 import org.json.JSONObject;
 
-import eu.unicore.services.rest.security.jwt.JWTUtils;
+import eu.unicore.services.restclient.jwt.JWTUtils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthClient;

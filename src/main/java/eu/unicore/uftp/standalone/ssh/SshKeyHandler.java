@@ -7,10 +7,10 @@ import java.security.GeneralSecurityException;
 import org.apache.commons.codec.binary.Base64;
 
 import eu.emi.security.authn.x509.helpers.PasswordSupplier;
-import eu.unicore.services.rest.client.IAuthCallback;
-import eu.unicore.services.rest.security.sshkey.SSHKey;
-import eu.unicore.services.rest.security.sshkey.SSHKeyUC;
-import eu.unicore.services.rest.security.sshkey.SSHUtils;
+import eu.unicore.services.restclient.IAuthCallback;
+import eu.unicore.services.restclient.sshkey.SSHKey;
+import eu.unicore.services.restclient.sshkey.SSHKeyUC;
+import eu.unicore.services.restclient.sshkey.SSHUtils;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.util.ConsoleUtils;
 import eu.unicore.util.Log;

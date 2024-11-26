@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 
-import eu.unicore.services.rest.client.IAuthCallback;
+import eu.unicore.services.restclient.IAuthCallback;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
 import eu.unicore.uftp.standalone.authclient.AuthserverClient;
 import eu.unicore.uftp.standalone.authclient.UNICOREStorageAuthClient;

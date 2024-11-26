@@ -9,8 +9,8 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
-import eu.unicore.services.rest.client.IAuthCallback;
-import eu.unicore.services.rest.client.UsernamePassword;
+import eu.unicore.services.restclient.IAuthCallback;
+import eu.unicore.services.restclient.UsernamePassword;
 
 /**
  *

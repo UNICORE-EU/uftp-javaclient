@@ -15,8 +15,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.hc.core5.http.HttpMessage;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
-import eu.unicore.services.rest.client.IAuthCallback;
-import eu.unicore.services.rest.client.UsernamePassword;
+import eu.unicore.services.restclient.IAuthCallback;
+import eu.unicore.services.restclient.UsernamePassword;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;

@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import eu.unicore.services.rest.client.UsernamePassword;
+import eu.unicore.services.restclient.UsernamePassword;
 
 /**
  *

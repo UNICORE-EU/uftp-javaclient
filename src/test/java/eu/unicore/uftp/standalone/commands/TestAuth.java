@@ -13,9 +13,9 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import eu.unicore.services.rest.client.UsernamePassword;
-import eu.unicore.services.rest.security.sshkey.SSHKey;
-import eu.unicore.services.rest.security.sshkey.SSHKeyUC;
+import eu.unicore.services.restclient.UsernamePassword;
+import eu.unicore.services.restclient.sshkey.SSHKey;
+import eu.unicore.services.restclient.sshkey.SSHKeyUC;
 import eu.unicore.uftp.standalone.BaseServiceTest;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;

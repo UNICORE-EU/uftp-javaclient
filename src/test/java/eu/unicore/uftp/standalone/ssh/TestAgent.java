@@ -8,8 +8,8 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import eu.unicore.services.rest.security.sshkey.SSHKeyUC;
-import eu.unicore.services.rest.security.sshkey.SSHUtils;
+import eu.unicore.services.restclient.sshkey.SSHKeyUC;
+import eu.unicore.services.restclient.sshkey.SSHUtils;
 
 /**
  * functional test that tests the agent support using real keys

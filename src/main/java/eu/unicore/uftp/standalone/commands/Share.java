@@ -8,7 +8,7 @@ import org.json.JSONObject;
 
 import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.unicore.security.Client;
-import eu.unicore.services.rest.client.BaseClient;
+import eu.unicore.services.restclient.BaseClient;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UOptions;
