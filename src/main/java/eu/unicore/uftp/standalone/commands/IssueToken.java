@@ -82,9 +82,14 @@ public class IssueToken extends Command {
 
 	private void inspect(String token) throws Exception {
 		JSONObject o = JWTUtils.getPayload(token);
-		message("Subject:      "+o.optString("sub"));
+		String sub = o.getString("sub");
+		String uid = o.optString("uid", null);
+		if(uid!=null) {
+			sub = sub + " (uid="+uid+")";
+		}
+		message("Subject:      "+sub);
 		message("Lifetime (s): "+(o.getInt("exp")-o.getInt("iat")));
-		message("Issued by:    "+o.optString("iss"));
+		message("Issued by:    "+o.getString("iss"));
 		message("Valid for:    "+o.optString("aud", "<unlimited>"));
 		message("Renewable:    "+o.optString("renewable", "no"));
 	}

@@ -4,6 +4,11 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
+UFTP Client 2.0.1 (released MMM DD, YYYY)
+-----------------------------------------
+ - show asserted UID (if any) in 'issue-token --inspect'
+ - version updates
+
 UFTP Client 2.0.0 (released Sep 20, 2024)
 -----------------------------------------
  - new feature: re-written progress and performance display
