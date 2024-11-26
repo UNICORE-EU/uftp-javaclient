@@ -23,9 +23,9 @@
     <compiler.fork>false</compiler.fork>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <auth.version>3.0.0</auth.version>
+    <auth.version>3.0.1</auth.version>
     <use.version>5.2.0-2</use.version>
-    <core.version>2.20.1</core.version>
+    <core.version>2.20.2</core.version>
     <jsch.version>0.0.9</jsch.version>
     <jnr.version>0.38.23</jnr.version>
     <jline.version>3.27.1</jline.version>
