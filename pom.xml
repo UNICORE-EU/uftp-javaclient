@@ -28,11 +28,10 @@
     <core.version>2.20.2</core.version>
     <jsch.version>0.0.9</jsch.version>
     <jnr.version>0.38.23</jnr.version>
-    <jline.version>3.27.1</jline.version>
+    <jline.version>3.28.0</jline.version>
     <cli.version>1.9.0</cli.version>
     <json.version>20240303</json.version>
     <gson.version>2.11.0</gson.version>
-    <log4j.version>2.23.1</log4j.version>
 
     <packman.enabled/>
     <package.version>${project.version}</package.version>

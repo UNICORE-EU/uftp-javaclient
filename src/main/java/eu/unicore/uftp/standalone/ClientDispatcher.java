@@ -48,12 +48,10 @@ public final class ClientDispatcher {
 
 	public int dispatch(String[] args) throws Exception {
 		String cmdName = extractCommand(args);
-		
 		if(cmdName == null || isHelp(cmdName)){
 			printUsage();
 			return 0;
 		}
-		
 		if(isVersion(cmdName)){
 			printVersion();
 			return 0;
@@ -69,16 +67,13 @@ public final class ClientDispatcher {
 			System.err.println("Unknown command: "+cmdName);
 			return 1;
 		}
-
 		String[] cmdArgs = Arrays.copyOfRange(args, 1, args.length);
 		if(cmdArgs.length==0 || isHelp(cmdArgs[0])){
 			cmd.printUsage();
 			return 0;
 		}
-
 		cmd.parseOptions(cmdArgs);
 		boolean OK = cmd.runCommand();
-		
 		return OK ? 0 : 1;
 	}
 

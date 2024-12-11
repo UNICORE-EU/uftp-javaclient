@@ -43,6 +43,10 @@ public class SshKeyHandler {
 		this.userName = userName;
 		this.token = token;
 		this.preferJWT = Boolean.parseBoolean(Utils.getProperty("UFTP_SSH_PREFER_JWT", "false"));
+		if(preferJWT) {
+			// can't sign JWT using the agent
+			System.setProperty("UFTP_NO_AGENT", "true");
+		}
 	}
 
 	public IAuthCallback getAuthData() throws Exception {

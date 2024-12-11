@@ -78,7 +78,7 @@ public abstract class DataTransferCommand extends RangedCommand {
 				verbose("Encryption ({}) enabled with key length {}", algo, keylength);
 			}catch(Exception ex){
 				encrypt = false;
-				System.err.println("WARN: cannot setup encryption: "+ex);
+				error("WARN: cannot setup encryption: {}", ex);
 			}
 		}
 		compress = line.hasOption('C');

@@ -40,13 +40,6 @@ Invoking 'uftp' will list the available commands.
 
 Invoking 'uftp <command> -h' will show help for a command
 
-For password authentication, use the "-P" option. The password can
-be written into the URL, for example:
-
- $> uftp ls -u demo:password https://localhost:9000/rest/auth/TEST:/home/demo/
-
-If not given on the command line, the password will be queried interactively.
-
 For detailed usage instructions and examples, refer to the
 manual available online at
 https://uftp-docs.readthedocs.io/en/latest/user-docs/uftp-client/index.html

@@ -120,7 +120,7 @@ public abstract class Command implements ICommand {
 		fileArgs = line.getArgs();
 		if (line.hasOption('v')){
 			verbose = true;
-			System.err.println("Verbose mode");
+			verbose("Verbose mode");
 		}
 		if (line.hasOption('u')){
 			String up = line.getOptionValue('u');
@@ -199,7 +199,7 @@ public abstract class Command implements ICommand {
 			run(facade);
 			return true;
 		}catch(Exception ex) {
-			System.err.println(Log.createFaultMessage("ERROR", ex));
+			error(Log.createFaultMessage("ERROR", ex));
 			return false;
 		}
 	}
@@ -209,7 +209,7 @@ public abstract class Command implements ICommand {
 	 */
 	@Override
 	public void printUsage() {
-		System.err.println("UFTP Client " + ClientDispatcher.getVersion());
+		message("UFTP Client {}", ClientDispatcher.getVersion());
 
 		HelpFormatter formatter = new HelpFormatter();
 		String newLine=System.getProperty("line.separator");
@@ -362,30 +362,19 @@ public abstract class Command implements ICommand {
 		return ssh.getAuthData();
 	}
 
-	/**
-	 * verbose log to console
-	 *
-	 * @param msg - log4j-style message
-	 * @param params - message parameters
-	 */
 	public void verbose(String msg, Object ... params) {
 		if(verbose)message(msg, params);
 	}
 
-	/**
-	 * print message to stderr
-	 * 
-	 * @param msg - log4j-style message
-	 * @param params - message parameters
-	 */
 	public void error(String msg, Object ... params) {
-		String f = new ParameterizedMessage(msg, params).getFormattedMessage();
-		System.err.println(f);
+		System.err.println(format(msg, params));
 	}
 
 	public void message(String msg, Object ... params) {
-		String f = new ParameterizedMessage(msg, params).getFormattedMessage();
-		System.out.println(f);
+		System.out.println(format(msg, params));
 	}
 
+	private String format(String msg, Object ... params) {
+		return new ParameterizedMessage(msg, params).getFormattedMessage();
+	}
 }

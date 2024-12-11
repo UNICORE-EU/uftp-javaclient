@@ -18,8 +18,7 @@ public class HttpClientFactory {
 		security.setValidator(new BinaryCertChainValidator(true));
 		security.setSslAuthn(true);
 		security.setSslEnabled(true);
-		HttpClientProperties httpProps = security.getHttpClientProperties();
-		checkHttpProxy(httpProps);
+		checkHttpProxy(security.getHttpClientProperties());
 		return security;
 	}
 

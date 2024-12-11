@@ -57,9 +57,8 @@ public class UNICOREStorageAuthClient implements AuthClient {
 
 	@Override
 	public JSONObject getInfo() throws Exception {
-		String infoURL = makeInfoURL(uri);
-		BaseClient bc = new BaseClient(infoURL, HttpClientFactory.getClientConfiguration(), authData);
-		return bc.getJSON();
+		return new BaseClient(makeInfoURL(uri), HttpClientFactory.getClientConfiguration(), authData)
+				.getJSON();
 	}
 
 	@Override
@@ -72,8 +71,7 @@ public class UNICOREStorageAuthClient implements AuthClient {
 			f.format("Auth server type:   UNICORE/X v%s%s", getServerVersion(info), crlf);
 			f.format("Remote user info:   %s%s", getUserInfo(info), crlf);
 			try {
-				String serverStatus = getServerStatus(info);
-				f.format("UFTP Server status: %s%s", serverStatus, crlf);
+				f.format("UFTP Server status: %s%s", getServerStatus(info), crlf);
 			}catch(JSONException e) {}
 		}
 		return sb.toString();
@@ -81,8 +79,7 @@ public class UNICOREStorageAuthClient implements AuthClient {
 
 	@Override
 	public String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception {
-		String tokenURL = makeIssueTokenURL(uri);
-		URIBuilder b = new URIBuilder(tokenURL);
+		URIBuilder b = new URIBuilder(makeIssueTokenURL(uri));
 		if(lifetime>0)b.addParameter("lifetime", String.valueOf(lifetime));
 		if(renewable)b.addParameter("renewable", "true");
 		if(limited)b.addParameter("limited", "true");
