@@ -4,7 +4,7 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-UFTP Client 2.1.0 (released MMM DD, YYYY)
+UFTP Client 2.1.0 (released Dec 11, 2024)
 -----------------------------------------
  - new feature: add option to get an OAuth authentication token
    from an OIDC server such as Keycloak
