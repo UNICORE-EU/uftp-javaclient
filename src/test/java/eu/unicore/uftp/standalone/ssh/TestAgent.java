@@ -22,7 +22,7 @@ public class TestAgent {
 		String token = "test123";
 		String user = "demouser";
 		File privKey = new File(System.getProperty("user.home")+"/.ssh/id_rsa");
-		SshKeyHandler handler = new SshKeyHandler(privKey, user, token);
+		SshKeyHandler handler = new SshKeyHandler(privKey, user, token, true);
 		handler.selectIdentity();
 		SSHKeyUC authData = (SSHKeyUC)handler.getAuthData();
 		String pubKey = FileUtils.readFileToString(new File(System.getProperty("user.home")+"/.ssh/id_rsa.pub"), "UTF-8");
@@ -35,8 +35,7 @@ public class TestAgent {
 		String token = "test123";
 		String user = "demouser";
 		File privKey = new File(System.getProperty("user.home")+"/.ssh/id_ed25519");
-		SshKeyHandler handler = new SshKeyHandler(privKey, user, token);
-		handler.setVerbose(true);
+		SshKeyHandler handler = new SshKeyHandler(privKey, user, token, true);
 		handler.selectIdentity();
 		SSHKeyUC authData = (SSHKeyUC)handler.getAuthData();
 		String pubKey = FileUtils.readFileToString(new File(System.getProperty("user.home")+"/.ssh/id_ed25519.pub"), "UTF-8");

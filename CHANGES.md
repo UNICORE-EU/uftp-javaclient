@@ -4,8 +4,12 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-UFTP Client 2.0.1 (released MMM DD, YYYY)
+UFTP Client 2.1.0 (released MMM DD, YYYY)
 -----------------------------------------
+ - new feature: add option to get an OAuth authentication token
+   from an OIDC server such as Keycloak
+ - fix: uploading multiple files to the default directory results
+   in permission errors
  - show asserted UID (if any) in 'issue-token --inspect'
  - version updates
 

@@ -92,8 +92,7 @@ public class RemoteFileCrawler extends FileCrawler {
         			String newSource = FilenameUtils.concat(remoteDir, name);
         			if(createLocalDirs && !isDevNull(newDestination))Files.createDirectories(Paths.get(newDestination));
         			if(recursive){
-        				// Unix 'cp' behaviour: when recursing, all subdirectories
-        				// are copied
+        				// Unix 'cp' behaviour: when recursing, all subdirectories are copied
         				crawl(newSource, newDestination, recursive, true);
         			}
         			else {

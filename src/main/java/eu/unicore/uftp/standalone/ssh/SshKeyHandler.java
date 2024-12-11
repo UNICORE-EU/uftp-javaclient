@@ -30,22 +30,19 @@ public class SshKeyHandler {
 
 	private final String token;
 
-	private boolean verbose = false;
+	private final boolean verbose;
 
 	// will use agent with a user-selected identity
 	private boolean selectIdentity = false;
 
 	private boolean preferJWT = false;
 
-	public SshKeyHandler(File privateKey, String userName, String token) {
+	public SshKeyHandler(File privateKey, String userName, String token, boolean verbose) {
+		this.verbose = verbose;
 		this.privateKey = privateKey;
 		this.userName = userName;
 		this.token = token;
 		this.preferJWT = Boolean.parseBoolean(Utils.getProperty("UFTP_SSH_PREFER_JWT", "false"));
-	}
-
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
 	}
 
 	public IAuthCallback getAuthData() throws Exception {

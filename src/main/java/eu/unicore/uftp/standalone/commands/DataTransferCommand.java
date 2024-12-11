@@ -53,17 +53,14 @@ public abstract class DataTransferCommand extends RangedCommand {
 	@Override
 	public void parseOptions(String[] args) throws ParseException {
 		super.parseOptions(args);
-
 		if (line.hasOption('n')) {
 			streams = Integer.parseInt(line.getOptionValue('n'));
 		}
-
 		if (line.hasOption('K')) {
 			UnitParser up = UnitParser.getCapacitiesParser(0);
 			bandwithLimit = (long)up.getDoubleValue(line.getOptionValue('K'));
 			verbose("LIMITING bandwidth per thread to {}B/s", up.getHumanReadable(bandwithLimit));
 		}
-
 		if (line.hasOption('E')) {
 			encrypt = true;
 			try{

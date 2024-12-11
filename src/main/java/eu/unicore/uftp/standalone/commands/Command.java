@@ -22,6 +22,7 @@ import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.oidc.OIDCAgentAuth;
+import eu.unicore.uftp.standalone.oidc.OIDCServerAuthN;
 import eu.unicore.uftp.standalone.ssh.SSHAgent;
 import eu.unicore.uftp.standalone.ssh.SshKeyHandler;
 import eu.unicore.uftp.standalone.util.Anonymous;
@@ -55,6 +56,7 @@ public abstract class Command implements ICommand {
 	protected boolean verbose = false;
 
 	protected String oidcAccount = null;
+	protected String oidcServerSettings = null;
 
 	protected String clientIP;
 
@@ -90,6 +92,11 @@ public abstract class Command implements ICommand {
 				.build(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("O").longOpt("oidc-agent")
 				.desc("Use oidc-agent with the specified account")
+				.required(false)
+				.hasArg()
+				.build(), UOptions.GRP_AUTH);
+		options.addOption(Option.builder("o").longOpt("oidc-server")
+				.desc("Get token from OIDC server using the specified settings file")
 				.required(false)
 				.hasArg()
 				.build(), UOptions.GRP_AUTH);
@@ -145,10 +152,17 @@ public abstract class Command implements ICommand {
 			enableSSH = false;
 		}
 		if (line.hasOption('O')){
-			if(line.hasOption('u') || line.hasOption('A')){
-				throw new IllegalArgumentException("Only one of '-u', '-A' or 'O' can be used!");
+			if(line.hasOption('u') || line.hasOption('A') || line.hasOption('o')){
+				throw new IllegalArgumentException("Only one of '-u', '-A', 'o', or '-O' can be used!");
 			}
 			oidcAccount = line.getOptionValue('O');
+			enableSSH = false;
+		}
+		if (line.hasOption('o')){
+			if(line.hasOption('u') || line.hasOption('A') || line.hasOption('O')){
+				throw new IllegalArgumentException("Only one of '-u', '-A', 'o', or '-O' can be used!");
+			}
+			oidcServerSettings = line.getOptionValue('o');
 			enableSSH = false;
 		}
 		if(enableSSH){
@@ -185,10 +199,6 @@ public abstract class Command implements ICommand {
 			run(facade);
 			return true;
 		}catch(Exception ex) {
-			if(verbose) {
-				ex.printStackTrace();
-				System.err.println();
-			}
 			System.err.println(Log.createFaultMessage("ERROR", ex));
 			return false;
 		}
@@ -278,6 +288,9 @@ public abstract class Command implements ICommand {
 		else if(oidcAccount!=null) {
 			return new OIDCAgentAuth(oidcAccount);
 		}
+		else if(oidcServerSettings!=null) {
+			return new OIDCServerAuthN(oidcServerSettings, verbose);			
+		}
 		else{
 			return getUPAuthData();
 		}
@@ -325,8 +338,8 @@ public abstract class Command implements ICommand {
 			if(keyFile == null || !keyFile.exists()){
 				throw new IOException("No useable private key found in "+Arrays.asList(dirs)+". Please use the --identity option!");
 			}
-			if(numKeys>1 && verbose) {
-				System.err.println("NOTE: more than one useable key found -"
+			if(numKeys>1) {
+				verbose("NOTE: more than one useable key found -"
 						+ " you might want to use '--identity <path_to_private_key>'");
 			}
 		}
@@ -336,24 +349,17 @@ public abstract class Command implements ICommand {
 				throw new IOException("Private key file " + sshIdentity + " does not exist.");
 			}
 		}
-		if(verbose){
 			if(haveAgent) {
-				System.err.println("Using SSH agent");
+				verbose("Using SSH agent");
 			}
 			if(keyFile!=null){
-				System.err.println("Using SSH key <"+keyFile.getAbsolutePath()+">");
+				verbose("Using SSH key <{}>", keyFile.getAbsolutePath());
 			}
-		}
-		SshKeyHandler ssh = new SshKeyHandler(keyFile, username, token);
-		ssh.setVerbose(verbose);
+		SshKeyHandler ssh = new SshKeyHandler(keyFile, username, token, verbose);
 		if(haveAgent && sshIdentity!=null) {
 			ssh.selectIdentity();
 		}
 		return ssh.getAuthData();
-	}
-
-	public void setVerbose(boolean verbose){
-		this.verbose = verbose;
 	}
 
 	/**

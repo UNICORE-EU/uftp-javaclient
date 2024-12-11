@@ -119,15 +119,16 @@ public class UCP extends DataTransferCommand {
 			throw new IllegalArgumentException("Missing argument: "+getArgumentDescription());
 		}
 		target = fileArgs[fileArgs.length-1];
-		if(fileArgs.length>2 && !target.endsWith("/")){
-			target = target + "/";
+		if(fileArgs.length>2) {
+			if(!target.endsWith(":") && !target.endsWith("/")){
+				target = target + "/";
+			}
 		}
 		recurse = line.hasOption('r');
 		preserve = line.hasOption('p');
 		resume = line.hasOption('R');
 		archiveMode = line.hasOption('a');
 		showPerformance = line.hasOption('D');
-
 		if (line.hasOption('t')) {
 			numClients = Integer.parseInt(line.getOptionValue('t'));
 			if(numClients<1){
@@ -137,10 +138,10 @@ public class UCP extends DataTransferCommand {
 				String thresh = line.getOptionValue('T');
 				splitThreshold = (long)UnitParser.getCapacitiesParser(2).getDoubleValue(thresh);
 			}
-			if(verbose && !archiveMode){
-				System.err.println("Using up to <"+numClients+"> client threads.");
+			if(!archiveMode){
+				verbose("Using up to <{}> client threads.", numClients);
 				if(splitThreshold>0) {
-					System.err.println("Splitting files larger than " +
+					verbose("Splitting files larger than {}",
 							UnitParser.getCapacitiesParser(0).getHumanReadable(splitThreshold));
 				}
 			}
@@ -148,13 +149,11 @@ public class UCP extends DataTransferCommand {
 		if (line.hasOption('B')) {
 			initRange(line.getOptionValue('B'));
 		}
-
 		if(resume && line.hasOption('B')){
 			throw new ParseException("Resume mode is not supported in combination with a byte range!");
 		}
-
-		if(verbose && archiveMode){
-			System.err.println("Archive mode ENABLED");
+		if(archiveMode){
+			verbose("Archive mode ENABLED");
 		}
 	}
 
@@ -181,8 +180,8 @@ public class UCP extends DataTransferCommand {
 		if(totalSize>0) {
 			double rate = 1000* totalSize / (System.currentTimeMillis() - start);
 			UnitParser up = UnitParser.getCapacitiesParser(1);
-			verbose("\nTotal bytes transferred: "+up.getHumanReadable(totalSize)+"B");
-			verbose("Net transfer rate:       "+up.getHumanReadable(rate)+"B/sec.");
+			verbose("\nTotal bytes transferred: {}B", up.getHumanReadable(totalSize));
+			verbose("Net transfer rate:       {}B/sec",up.getHumanReadable(rate));
 		}
 	}
 

@@ -50,9 +50,7 @@ public class ClientPool implements Closeable {
 			try{
 				this.pb = new MultiProgressBar(poolSize);
 			}catch(IOException ioe) {
-				if(verbose) {
-					System.err.println("Cannot setup progress bar: "+Log.getDetailMessage(ioe));
-				}
+				verbose("Cannot setup progress bar: {}", Log.getDetailMessage(ioe));
 			}
 		}
 		this.es = Executors.newFixedThreadPool(poolSize, new ThreadFactory() {
@@ -90,7 +88,6 @@ public class ClientPool implements Closeable {
 				f.get();
 			}catch(Exception e){
 				message(Log.createFaultMessage("ERROR in <"+t.getId()+">", e));
-				e.printStackTrace();
 			}
 		});
 		clients.forEach(sc -> IOUtils.closeQuietly(sc));

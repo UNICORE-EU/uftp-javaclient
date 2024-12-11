@@ -80,7 +80,7 @@ public class TestAuth extends BaseServiceTest {
 
 	@Test
 	public void testSSHKeyOldStyle() throws Exception {
-		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", "123");
+		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", "123", true);
 		sh.setPreferJWT(false);
 		System.setProperty("UFTP_NO_AGENT", "true");
 		var auth = sh.getAuthData();
@@ -93,7 +93,7 @@ public class TestAuth extends BaseServiceTest {
 
 	@Test
 	public void testSSHKeyJWT() throws Exception {
-		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", "123");
+		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", "123", true);
 		sh.setPreferJWT(true);
 		System.setProperty("UFTP_NO_AGENT", "true");
 		var auth = sh.getAuthData();
