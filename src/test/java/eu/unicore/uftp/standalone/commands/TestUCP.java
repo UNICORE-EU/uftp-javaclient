@@ -71,7 +71,7 @@ public class TestUCP extends BaseServiceTest {
 		String src = "./pom.xml";
 		String target = testsDir.getAbsolutePath();
 		String[] args = new String[]{ new UCP().getName(), "-u", "demouser:test123",
-				"-B0-10",
+				"-B0-10", "-v",
 				src, getAuthURL(target)
 		};
 		assertEquals(0, ClientDispatcher._main(args));
@@ -299,7 +299,9 @@ public class TestUCP extends BaseServiceTest {
 		String src =  new File("./pom.xml").getAbsolutePath();
 		String target = testsDir.getAbsolutePath();
 		String[] args = new String[]{ new UCP().getName(), "-u", "demouser:test123",
-				"-t", "2", "-T", "100", "-D", "-v",
+				"-v",
+				"-t", "2", "-T", "100",
+				"-D",
 				getAuthURL(src), target
 		};
 		assertEquals(0, ClientDispatcher._main(args));

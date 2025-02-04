@@ -276,9 +276,9 @@ public class UCP extends DataTransferCommand {
 			final long start, final long total, final ResumeMode resumeMode) throws IOException {
 		int numChunks = computeNumChunks(total);
 		long chunkSize = total / numChunks;
-		long last = total-1;
-		verbose("Uploading: '{}' --> '{}', length={} numChunks={} chunkSize={}", 
-				local.getPath(), remotePath, total, numChunks, chunkSize);
+		long last = start+total-1;
+		verbose("Uploading: '{}' --> '{}', start={} length={} numChunks={} chunkSize={}", 
+				local.getPath(), remotePath, start, total, numChunks, chunkSize);
 		int width = String.valueOf(numChunks).length();
 		String localFileID = local.getPath();
 		String shortID = localFileID+"->"+remotePath;
@@ -286,7 +286,7 @@ public class UCP extends DataTransferCommand {
 				numChunks, new AtomicInteger(numChunks), new AtomicLong(0));
 		for(int i = 0; i<numChunks; i++){
 			final long end = last;
-			final long first =  i<numChunks-1 ? end - chunkSize : 0;
+			final long first =  i<numChunks-1 ? end - chunkSize : start;
 			TransferTask task = getUploadChunkTask(remotePath, localFileID, first, end, resumeMode);
 			String id = numChunks>1 ? 
 					String.format("%s->%s [%0"+width+"d/%d]", localFileID, remotePath, i+1, numChunks):
@@ -299,7 +299,7 @@ public class UCP extends DataTransferCommand {
 		}
 	}
 
-	private TransferTask getUploadChunkTask(String remote, String local, long start, long end, ResumeMode resumeMode)
+	private TransferTask getUploadChunkTask(final String remote, String local, final long start, final long end, final ResumeMode resumeMode)
 			throws IOException {
 		TransferTask task = new TransferTask() {
 			@Override
@@ -370,6 +370,7 @@ public class UCP extends DataTransferCommand {
 				}
 			}
 			if(ResumeMode.NONE.equals(resume) && file.exists()) {
+				verbose("Truncating <{}>", dest);
 				// truncate now to make sure we don't overwrite only part of the file 
 				try (RandomAccessFile raf = new RandomAccessFile(file, "rw")){
 					raf.setLength(0);
@@ -380,21 +381,22 @@ public class UCP extends DataTransferCommand {
 	}
 
 	private void doDownload(ClientPool pool, final String remotePath, final String local, 
-			final FileInfo remoteInfo, long start, long total, final ResumeMode resumeMode)
+			final FileInfo remoteInfo, final long start, final long total, final ResumeMode resumeMode)
 			throws URISyntaxException, IOException {
 		int numChunks = computeNumChunks(total);
 		long chunkSize = total / numChunks;
-		verbose("Downloading: '{}' --> '{}', length={} numChunks={} chunkSize={}",
-				remotePath, local, total, numChunks, chunkSize);
+		verbose("Downloading: '{}' --> '{}', start={} length={} numChunks={} chunkSize={}",
+				remotePath, local, start, total, numChunks, chunkSize);
 		int width = String.valueOf(numChunks).length();
 		String shortID = remotePath+"->"+local;
 		TransferTracker ti = new TransferTracker(local, total,
 				numChunks, new AtomicInteger(numChunks), new AtomicLong(0));
+		long first = start;
 		for(int i = 0; i<numChunks; i++){
-			final long first = start;
-			final long end = i<numChunks-1 ? first + chunkSize : total-1;
-			RangeMode rm = numChunks>1? RangeMode.READ_WRITE : rangeMode;
-			TransferTask task = getDownloadChunkTask(remotePath, local, start, end,
+			long end = i<numChunks-1? first + chunkSize : start+total-1;
+			RangeMode rm = numChunks>1 || !ResumeMode.NONE.equals(resume) ? 
+					RangeMode.READ_WRITE : rangeMode;
+			TransferTask task = getDownloadChunkTask(remotePath, local, first, end,
 						remoteInfo, rm, resumeMode);
 			String id = numChunks>1 ? 
 					String.format("%s->%s [%0"+width+"d/%d]", remotePath, local, i+1, numChunks):
@@ -403,17 +405,18 @@ public class UCP extends DataTransferCommand {
 			task.setTransferTracker(ti);
 			task.setDataSize(end-first);
 			pool.submit(task);
-			start = end + 1;
+			first = end + 1;
 		}
 	}
 
-	private TransferTask getDownloadChunkTask(String remotePath, String dest, long start, long end, FileInfo fi, RangeMode rangeMode, ResumeMode resumeMode)
+	private TransferTask getDownloadChunkTask(String remotePath, String dest, long start, long end, FileInfo fi, 
+			final RangeMode rangeMode, final ResumeMode resumeMode)
 					throws FileNotFoundException, URISyntaxException, IOException{
 		TransferTask task = new TransferTask() {
 			public void doCall() throws Exception {
 				if(ResumeMode.CHECKSUM.equals(resumeMode)) {
 					if(checksumMatches(dest, remotePath, start, end-start+1)) {
-						verbose("Nothing to do for {} [{}:{}]", remotePath, start, end);
+						verbose("Nothing to do for <{}> [{}:{}]", remotePath, start, end);
 						return;
 					}
 				}
