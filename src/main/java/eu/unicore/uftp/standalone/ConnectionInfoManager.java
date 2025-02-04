@@ -68,28 +68,24 @@ public class ConnectionInfoManager {
     }
 
     public boolean isSameServer(String uri) {
-        if (isLocal(uri)) {
-            return false;
-        }
-        try {
+        if (isRemote(uri)) try {
             Map<String, String> params = extractConnectionParameters(uri);
             return (params.get("auth").equals(getAuthURL())
                     && params.get("port").equals(String.valueOf(getPort()))
                     && params.get("scheme").equals(getScheme()));
-        } catch (URISyntaxException ex) {
-            return false;
-        }
+        } catch (URISyntaxException ex) {}
+        return false;
     }
 
     public boolean currentSessionContains(String uri) {
     	try {
     		Map<String, String> params = extractConnectionParameters(uri);
-    		String currentPath = getPath();
+    		String base = getBasedir();
     		String newPath = params.get("path");
-    		return currentPath!=null && newPath!=null && newPath.startsWith(currentPath);
-    	}catch(URISyntaxException ex) {
-    		return false;
-    	}
+    		return base!=null && newPath!=null && 
+    				newPath.startsWith(base);
+    	}catch(URISyntaxException ex) {}
+    	return false;
     }
 
     public Map<String,String> extractConnectionParameters(String uriString) throws URISyntaxException {
