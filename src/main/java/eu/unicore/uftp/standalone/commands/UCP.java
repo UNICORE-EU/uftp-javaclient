@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 
 import eu.unicore.uftp.client.FileInfo;
 import eu.unicore.uftp.client.UFTPSessionClient;
@@ -34,6 +33,7 @@ import eu.unicore.uftp.standalone.util.ClientPool;
 import eu.unicore.uftp.standalone.util.ClientPool.TransferTask;
 import eu.unicore.uftp.standalone.util.ClientPool.TransferTracker;
 import eu.unicore.uftp.standalone.util.RangeMode;
+import eu.unicore.uftp.standalone.util.ResumeMode;
 import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.uftp.standalone.util.UnitParser;
 import eu.unicore.util.Log;
@@ -41,7 +41,7 @@ import eu.unicore.util.Pair;
 
 public class UCP extends DataTransferCommand {
 
-	protected boolean resume = false;
+	protected ResumeMode resume = ResumeMode.NONE;
 
 	protected String target;
 
@@ -126,7 +126,10 @@ public class UCP extends DataTransferCommand {
 		}
 		recurse = line.hasOption('r');
 		preserve = line.hasOption('p');
-		resume = line.hasOption('R');
+		boolean doResume = line.hasOption('R');
+		if(doResume) {
+			resume = ResumeMode.APPEND;
+		}
 		archiveMode = line.hasOption('a');
 		showPerformance = line.hasOption('D');
 		if (line.hasOption('t')) {
@@ -145,15 +148,22 @@ public class UCP extends DataTransferCommand {
 							UnitParser.getCapacitiesParser(0).getHumanReadable(splitThreshold));
 				}
 			}
+			if(doResume && line.hasOption('T')) {
+				resume=ResumeMode.CHECKSUM;
+			}
 		}
 		if (line.hasOption('B')) {
 			initRange(line.getOptionValue('B'));
 		}
-		if(resume && line.hasOption('B')){
-			throw new ParseException("Resume mode is not supported in combination with a byte range!");
+		if(doResume && line.hasOption('B')){
+			resume = ResumeMode.CHECKSUM;
+			throw new ParseException("Resume mode is not (yet) supported in combination with a byte range!");
 		}
 		if(archiveMode){
 			verbose("Archive mode ENABLED");
+		}
+		if(doResume) {
+			verbose("Resume mode {} enabled.", resume);
 		}
 	}
 
@@ -237,32 +247,33 @@ public class UCP extends DataTransferCommand {
 		}
 		else{
 			File file = new File(local);
-			long offset = 0;
-			if(resume && !haveRange()){
+			long offset = getOffset();
+			long total = getLength()>-1? getLength() : file.length();
+			if(ResumeMode.APPEND.equals(resume)){
+				boolean targetExists = false;
 				try{
 					offset = sc.getFileSize(dest);
+					targetExists = true;
 				}catch(IOException ioe) {
 					// does not exist
 				}
-				long size = file.length() - offset;
-				if(size>0){
-					verbose("Resuming transfer, already have <{}> bytes", offset);
-					TransferTask task = getUploadChunkTask(dest, local, offset, file.length()-1, null);
-					pool.submit(task);
-				}
-				else{
-					verbose("Nothing to do for <{}>", dest);
+				total = file.length() - offset;
+				if(targetExists) {
+					if(total>0){
+						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", dest, offset, total);
+					}
+					else{
+						verbose("Nothing to do for <{}>", dest);
+						return;
+					}
 				}
 			}
-			else {
-				long total = getLength()>-1? getLength() : file.length();
-				doUpload(pool, file, dest, getOffset(), total);
-			}
+			doUpload(pool, file, dest, offset, total, resume);
 		}	
 	}
 
 	private void doUpload(ClientPool pool, final File local, final String remotePath,
-			final long start, final long total) throws IOException {
+			final long start, final long total, final ResumeMode resumeMode) throws IOException {
 		int numChunks = computeNumChunks(total);
 		long chunkSize = total / numChunks;
 		long last = total-1;
@@ -276,7 +287,7 @@ public class UCP extends DataTransferCommand {
 		for(int i = 0; i<numChunks; i++){
 			final long end = last;
 			final long first =  i<numChunks-1 ? end - chunkSize : 0;
-			TransferTask task = getUploadChunkTask(remotePath, localFileID, first, end, null);
+			TransferTask task = getUploadChunkTask(remotePath, localFileID, first, end, resumeMode);
 			String id = numChunks>1 ? 
 					String.format("%s->%s [%0"+width+"d/%d]", localFileID, remotePath, i+1, numChunks):
 						shortID;
@@ -288,11 +299,17 @@ public class UCP extends DataTransferCommand {
 		}
 	}
 
-	private TransferTask getUploadChunkTask(String remote, String local, long start, long end, UFTPSessionClient sc)
+	private TransferTask getUploadChunkTask(String remote, String local, long start, long end, ResumeMode resumeMode)
 			throws IOException {
-		TransferTask task = new TransferTask(sc) {
+		TransferTask task = new TransferTask() {
 			@Override
 			public void doCall()throws Exception {
+				if(ResumeMode.CHECKSUM.equals(resumeMode)) {
+					if(checksumMatches(local, remote, start, end-start+1)) {
+						verbose("Nothing to do for <{}> [{}:{}]", remote, start, end);
+						return;
+					}
+				}
 				final File file = new File(local);
 				try(RandomAccessFile raf = new RandomAccessFile(file, "r"))
 				{
@@ -331,58 +348,39 @@ public class UCP extends DataTransferCommand {
 			throws Exception {
 		String dest = getFullLocalDestination(remotePath, local);
 		File file = new File(dest);
-		OutputStream fos = null;
-		RandomAccessFile raf = null;
-		try{
-			if("-".equals(local)){
-				fos = System.out;
-				sc.get(remotePath, getOffset(), getLength(), fos);
-				sc.resetDataConnections();
-			}else{
-				FileInfo fi = sc.stat(remotePath);
-				if(haveRange()){
-					long size = getLength();
-					doDownload(pool, remotePath, dest, fi, startByte, size);
-				}
-				else{
-					if(resume && file.exists()){
-						// check if we have local data already
-						long start = file.length();
-						long length = fi.getSize() - start;
-						raf = new RandomAccessFile(file, "rw");
-						fos = Channels.newOutputStream(raf.getChannel());
-
-						if(length>0){
-							verbose("Resuming transfer, already have <{}> bytes", start);
-							TransferTask task = getDownloadChunkTask(remotePath, local, start,
-									fi.getSize()-1, sc, fi, RangeMode.APPEND);
-							pool.submit(task);
-						}
-						else{
-							verbose("Nothing to do for {}",remotePath);
-						}
+		if("-".equals(local)){
+			sc.get(remotePath, getOffset(), getLength(), System.out);
+			sc.resetDataConnections();
+		}else{
+			FileInfo fi = sc.stat(remotePath);
+			long offset = getOffset();
+			long total = getLength()>-1? getLength() : fi.getSize();
+			
+			if(ResumeMode.APPEND.equals(resume)){
+				if(file.exists()) {
+					offset = file.length();
+					total = total - offset;
+					if(total>0){
+						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", remotePath, offset, total);
 					}
 					else{
-						long size = fi.getSize();
-						if(file.exists()) {
-							// truncate it now to make sure we don't overwrite 
-							// only part of the file 
-							raf = new RandomAccessFile(file, "rw");
-							try {
-								raf.setLength(0);
-							}catch(Exception e) {}
-						}
-						doDownload(pool, remotePath, dest, fi, 0, size);
+						verbose("Nothing to do for <{}>", remotePath);
+						return;
 					}
 				}
 			}
-		}
-		finally{
-			IOUtils.closeQuietly(raf);
+			if(ResumeMode.NONE.equals(resume) && file.exists()) {
+				// truncate now to make sure we don't overwrite only part of the file 
+				try (RandomAccessFile raf = new RandomAccessFile(file, "rw")){
+					raf.setLength(0);
+				}catch(Exception e) {}
+			}
+			doDownload(pool, remotePath, dest, fi, offset, total, resume);
 		}
 	}
 
-	private void doDownload(ClientPool pool, final String remotePath, final String local, final FileInfo remoteInfo, long start, long total)
+	private void doDownload(ClientPool pool, final String remotePath, final String local, 
+			final FileInfo remoteInfo, long start, long total, final ResumeMode resumeMode)
 			throws URISyntaxException, IOException {
 		int numChunks = computeNumChunks(total);
 		long chunkSize = total / numChunks;
@@ -396,7 +394,8 @@ public class UCP extends DataTransferCommand {
 			final long first = start;
 			final long end = i<numChunks-1 ? first + chunkSize : total-1;
 			RangeMode rm = numChunks>1? RangeMode.READ_WRITE : rangeMode;
-			TransferTask task = getDownloadChunkTask(remotePath, local, start, end, null, remoteInfo, rm);
+			TransferTask task = getDownloadChunkTask(remotePath, local, start, end,
+						remoteInfo, rm, resumeMode);
 			String id = numChunks>1 ? 
 					String.format("%s->%s [%0"+width+"d/%d]", remotePath, local, i+1, numChunks):
 						shortID;
@@ -408,11 +407,16 @@ public class UCP extends DataTransferCommand {
 		}
 	}
 
-	private TransferTask getDownloadChunkTask(String remotePath, String dest, long start, long end, 
-			UFTPSessionClient sc, FileInfo fi, RangeMode rangeMode)
+	private TransferTask getDownloadChunkTask(String remotePath, String dest, long start, long end, FileInfo fi, RangeMode rangeMode, ResumeMode resumeMode)
 					throws FileNotFoundException, URISyntaxException, IOException{
-		TransferTask task = new TransferTask(sc) {
+		TransferTask task = new TransferTask() {
 			public void doCall() throws Exception {
+				if(ResumeMode.CHECKSUM.equals(resumeMode)) {
+					if(checksumMatches(dest, remotePath, start, end-start+1)) {
+						verbose("Nothing to do for {} [{}:{}]", remotePath, start, end);
+						return;
+					}
+				}
 				UFTPSessionClient sc = getSessionClient();
 				File file = new File(dest);
 				OutputStream fos = null;

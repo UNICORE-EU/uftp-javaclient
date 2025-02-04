@@ -2,6 +2,8 @@ package eu.unicore.uftp.standalone.util;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -16,6 +18,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
 import eu.unicore.uftp.client.UFTPSessionClient;
+import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.util.Log;
 import eu.unicore.util.Pair;
@@ -67,7 +70,7 @@ public class ClientPool implements Closeable {
 					t.setName("UFTPClient-"+num.incrementAndGet());
 					return t;
 				}catch(Exception ex){
-					clientFacade.message("Creating new client thread failed: {}", ex);
+					clientFacade.message("Creating new client thread (no. {}) failed: {}", num.get()+1,ex);
 					createNewThreads = false;
 					if(num.get()==0) {
 						throw new RuntimeException(ex);
@@ -139,9 +142,7 @@ public class ClientPool implements Closeable {
 
 		private TransferTracker transferTracker;
 
-		public TransferTask(UFTPSessionClient sc) {
-			this.sc = sc;
-		}
+		public TransferTask() {}
 
 		public String getId() {
 			return id;
@@ -198,11 +199,23 @@ public class ClientPool implements Closeable {
 			}
 		}
 
+		public boolean checksumMatches(String localFile, String remoteFile, long offset, long size)
+				throws Exception{
+			String localCS = checksum(localFile, offset, size);
+			@SuppressWarnings("resource")
+			String remoteCS = getSessionClient().getHash(remoteFile, offset, size).hash;
+			return localCS.equals(remoteCS);
+		}
+
 		@Override
 		public void close() {
 			if(pb!=null) {
 				pb.closeCurrentThread();
 			}
+		}
+		
+		public void verbose(String msg, Object...params) {
+			System.out.println(new ParameterizedMessage(msg, params).getFormattedMessage());
 		}
 	}
 
@@ -242,6 +255,31 @@ public class ClientPool implements Closeable {
 				return ((TransferTracker)other).transferID == transferID;
 			}
 			return false;
+		}
+
+	}
+
+	final static String algo = "MD5";
+
+	public static String checksum(String localFile, long offset, long size) throws Exception {
+		try(RandomAccessFile f = new RandomAccessFile(localFile, "r")){
+			f.seek(offset);
+			int bufsize = 16384;
+			byte[]buf = new byte[bufsize];
+			MessageDigest md = MessageDigest.getInstance(algo);
+			int r = 0;
+			int l = 0;
+			long remaining = size;
+			while(true) {
+				l = remaining>bufsize? bufsize:(int)remaining;
+				r = f.read(buf, 0, l);
+				if (r <= 0) {
+					break;
+				}
+				remaining -= r;
+				md.update(buf, 0, r);
+			}
+			return Utils.hexString(md.digest());
 		}
 	}
 }

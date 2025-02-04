@@ -4,6 +4,13 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
+
+UFTP Client 2.2.0 (released Feb dd, 2025)
+-----------------------------------------
+ - improvement: "cp --resume" implementation now uses checksums in chunked mode
+   to decide whether to transfer data
+ - updated third party dependencies
+
 UFTP Client 2.1.0 (released Dec 11, 2024)
 -----------------------------------------
  - new feature: add option to get an OAuth authentication token
