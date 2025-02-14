@@ -70,7 +70,7 @@ public class ClientPool implements Closeable {
 					t.setName("UFTPClient-"+num.incrementAndGet());
 					return t;
 				}catch(Exception ex){
-					clientFacade.message("Creating new client thread (no. {}) failed: {}", num.get()+1,ex);
+					clientFacade.message("Creating new client thread failed: {}", ex);
 					createNewThreads = false;
 					if(num.get()==0) {
 						throw new RuntimeException(ex);
@@ -213,7 +213,7 @@ public class ClientPool implements Closeable {
 				pb.closeCurrentThread();
 			}
 		}
-		
+
 		public void verbose(String msg, Object...params) {
 			System.out.println(new ParameterizedMessage(msg, params).getFormattedMessage());
 		}

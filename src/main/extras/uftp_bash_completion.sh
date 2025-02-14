@@ -19,7 +19,7 @@ _uftp()
   # looking for arguments matching to command
   case "${COMP_WORDS[1]}" in
     authenticate)
-    opts="$global_opts --bandwith-limit --bytes --compress --encrypt --streams"
+    opts="$global_opts --bandwith-limit --bytes --compress --encrypt --persistent --streams"
     ;;
     checksum)
     opts="$global_opts --algorithm --bytes --recurse"

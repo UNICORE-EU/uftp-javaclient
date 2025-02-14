@@ -5,11 +5,13 @@ The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
 
-UFTP Client 2.2.0 (released Feb dd, 2025)
+UFTP Client 2.2.0 (released Feb 14, 2025)
 -----------------------------------------
  - improvement: "cp --resume" implementation now uses checksums in chunked mode
    to decide whether to transfer data
  - fix: re-use of sessions in "uftp ls" with multiple arguments did not work correctly
+ - new feature: 'auth': option "--persistent" to create a persistent session
+   (e.g. needed for curlftpfs)
  - updated third party dependencies
 
 UFTP Client 2.1.0 (released Dec 11, 2024)

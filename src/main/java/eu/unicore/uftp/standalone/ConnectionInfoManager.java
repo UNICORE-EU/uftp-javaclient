@@ -79,13 +79,12 @@ public class ConnectionInfoManager {
 
     public boolean currentSessionContains(String uri) {
     	try {
-    		Map<String, String> params = extractConnectionParameters(uri);
-    		String base = getBasedir();
-    		String newPath = params.get("path");
-    		return base!=null && newPath!=null && 
-    				newPath.startsWith(base);
-    	}catch(URISyntaxException ex) {}
-    	return false;
+            Map<String, String> params = extractConnectionParameters(uri);
+            String base = getBasedir();
+            String newPath = params.get("path");
+            return base!=null && newPath!=null && newPath.startsWith(base);
+        } catch(URISyntaxException ex) {}
+        return false;
     }
 
     public Map<String,String> extractConnectionParameters(String uriString) throws URISyntaxException {

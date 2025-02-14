@@ -35,10 +35,17 @@ public class AuthserverClient implements AuthClient {
 
 	private final ClientFacade client;
 
+	private boolean persistent = false;
+
 	public AuthserverClient(String authUrl, IAuthCallback authData, ClientFacade client) {
 		this.uri = authUrl;
 		this.authData = authData;
 		this.client = client;
+	}
+
+	@Override
+	public void setPersistentSessions(boolean persistent) {
+		this.persistent = persistent;
 	}
 
 	@Override
@@ -49,7 +56,7 @@ public class AuthserverClient implements AuthClient {
 				client.getEncryptionAlgorithm().toString() : null;
 		AuthRequest authRequest = createRequestObject(path,
 				client.getStreams(), base64Key, encryptionAlgorithm, client.isCompress(),
-				client.getGroup(), client.getClientIP(), true);
+				client.getGroup(), client.getClientIP(), persistent);
 		JSONObject request = new JSONObject(gson.toJson(authRequest));
 		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
 		try(ClassicHttpResponse res = bc.post(request)){
