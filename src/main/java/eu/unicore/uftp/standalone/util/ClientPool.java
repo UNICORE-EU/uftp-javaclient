@@ -85,13 +85,9 @@ public class ClientPool implements Closeable {
 	public void close() throws IOException{
 		es.shutdown();
 		tasks.forEach(p -> {
-			Future<Boolean> f = p.getM2();
-			TransferTask t = p.getM1();
 			try{
-				f.get();
-			}catch(Exception e){
-				message(Log.createFaultMessage("ERROR in <"+t.getId()+">", e));
-			}
+				p.getM2().get();
+			}catch(Exception e){}
 		});
 		clients.forEach(sc -> IOUtils.closeQuietly(sc));
 		if(pb!=null)pb.close();

@@ -4,7 +4,17 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-
+UFTP Client 2.2.1 (released Mar 31, 2025)
+-----------------------------------------
+ - fix: report server errors that occurred during the actual
+   data transfer
+ - fix: verify that number of bytes sent/received is as expected
+ - oidc server auth: do not send "scope" parameter, if not explicitely
+   defined in the preferences file
+ - new feature: read additional options from UFTP_OPTIONS environment variable
+   (FILE_READ_BUFFER_SIZE, FILE_WRITE_BUFFER_SIZE)
+   and send them to the server (needs UFTPD 3.5.0 and later)
+ 
 UFTP Client 2.2.0 (released Feb 14, 2025)
 -----------------------------------------
  - improvement: "cp --resume" implementation now uses checksums in chunked mode

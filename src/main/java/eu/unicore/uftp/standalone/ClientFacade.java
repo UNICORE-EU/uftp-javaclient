@@ -8,6 +8,7 @@ import org.apache.logging.log4j.message.ParameterizedMessage;
 
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.dpc.AuthorizationFailureException;
+import eu.unicore.uftp.dpc.Reply;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.dpc.Utils.EncryptionAlgorithm;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
@@ -76,7 +77,31 @@ public class ClientFacade {
 		}
 		sc.setBandwidthLimit(bandwidthLimit);
 		sc.connect();
+		setOptions(sc);
 		return sc;
+	}
+
+	private void setOptions(UFTPSessionClient sc) {
+		String opts = Utils.getProperty("UFTP_OPTIONS", null);
+		if(opts!=null) {
+			try {
+				for (String p: opts.split(",")){
+					if(p.trim().length()==0)continue;
+					String t[]=p.split("=",2);
+					String prop = t[0];
+					String value = t[1];
+					Reply reply = sc.runCommand("OPTS "+prop+" "+value);
+					if(reply.isOK()) {
+						verbose("Set option: "+prop+"="+value);
+					}else {
+						verbose("ERROR: "+reply.getStatusLine());
+					}
+				}
+			}
+			catch(Exception ex) {
+				verbose("Error evaluating UFTP_OPTIONS: "+ex.getMessage());
+			}
+		}
 	}
 	
 	/**

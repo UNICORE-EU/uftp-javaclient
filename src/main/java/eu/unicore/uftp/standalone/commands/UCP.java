@@ -316,7 +316,10 @@ public class UCP extends DataTransferCommand {
 					InputStream fis = Channels.newInputStream(raf.getChannel());
 					UFTPSessionClient sc = getSessionClient();
 					if(start>0)raf.seek(start);
-					sc.put(remote, end-start+1, start, fis);
+					long length = end-start+1;
+					long written = sc.put(remote, length, start, fis);
+					if(written<length)throw new IOException("Premature end of upload. "
+							+ "Wrote <"+written+"> of <"+length+"> bytes.");
 					if(preserve && !remote.startsWith("/dev/")){
 						Calendar to = Calendar.getInstance();
 						to.setTimeInMillis(file.lastModified());
@@ -429,7 +432,10 @@ public class UCP extends DataTransferCommand {
 						raf.seek(file.length());
 					}
 					fos = Channels.newOutputStream(raf.getChannel());
-					sc.get(remotePath, start, end-start+1, fos);
+					long length = end-start+1;
+					long received = sc.get(remotePath, start, length, fos);
+					if(received<length)throw new IOException("Premature end of stream. "
+							+ "Expected: <"+length+"> bytes, received <"+received+">");
 					if(preserve && !dest.startsWith("/dev/")){
 						try{
 							Files.setLastModifiedTime(file.toPath(),FileTime.fromMillis(fi.getLastModified()));

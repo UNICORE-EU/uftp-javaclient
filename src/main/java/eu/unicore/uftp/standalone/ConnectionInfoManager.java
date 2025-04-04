@@ -121,6 +121,9 @@ public class ConnectionInfoManager {
         String path = localUri.getPath();
         String[]paths=(localUri.getPath().split("\\:",2));
         String auth = scheme+"://"+localUri.getHost()+":"+port;
+        if(paths.length>1) {
+        	while(paths[1].startsWith("//"))paths[1]=paths[1].substring(1);
+        }
         if(paths.length>1 && FilenameUtils.normalize(paths[1], true)!=null){
         	path = FilenameUtils.normalize(paths[1], true);
         	if(path.startsWith("/")) {
@@ -136,12 +139,6 @@ public class ConnectionInfoManager {
         			parameters.put("filename", ".");
         		}
         	}
-//        	else {
-//        		if(path.endsWith("/")) {
-//        			parameters.put("basedir", path);
-//        			parameters.put("filename", ".");
-//        		}
-//        	}
         }
         else {
             path = "";

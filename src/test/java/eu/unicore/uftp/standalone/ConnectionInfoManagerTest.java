@@ -138,12 +138,11 @@ public class ConnectionInfoManagerTest {
 	}
 
 	@Test
-	public void testIsRemot2e() {
+	public void testIsRemote() {
 		String argument = remoteUri;
 		boolean expResult = true;
 		boolean result = ConnectionInfoManager.isRemote(argument);
 		assertEquals(expResult, result);
-
 		argument = localUri;
 		expResult = false;
 		result = ConnectionInfoManager.isRemote(argument);
@@ -158,8 +157,8 @@ public class ConnectionInfoManagerTest {
 
 	@Test
 	public void testBaseDir() throws Exception {
-		String[] paths = new String[] {".foo", "/opt","/opt/"};
-		String[] baseDirs = new String[] {"", "/", "/opt/"};
+		String[] paths = new String[] { ".foo", "/opt","/opt/", "///tmp/", "/tmp///foo/x"};
+		String[] baseDirs = new String[] { "", "/", "/opt/", "/tmp/", "/tmp/foo/"};
 		for(int i = 0; i<paths.length; i++) {
 			String p = paths[i];
 			mainUri = String.format(uriFormatingString, scheme, host, port, p);
