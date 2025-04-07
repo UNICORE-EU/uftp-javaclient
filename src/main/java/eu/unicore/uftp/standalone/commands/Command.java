@@ -21,8 +21,8 @@ import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
-import eu.unicore.uftp.standalone.oidc.OIDCAgentAuth;
-import eu.unicore.uftp.standalone.oidc.OIDCServerAuthN;
+import eu.unicore.uftp.standalone.oidc.OIDCAgent;
+import eu.unicore.uftp.standalone.oidc.OIDCServer;
 import eu.unicore.uftp.standalone.ssh.SSHAgent;
 import eu.unicore.uftp.standalone.ssh.SshKeyHandler;
 import eu.unicore.uftp.standalone.util.Anonymous;
@@ -286,10 +286,10 @@ public abstract class Command implements ICommand {
 			};
 		}
 		else if(oidcAccount!=null) {
-			return new OIDCAgentAuth(oidcAccount);
+			return new OIDCAgent(oidcAccount);
 		}
 		else if(oidcServerSettings!=null) {
-			return new OIDCServerAuthN(oidcServerSettings, verbose);			
+			return new OIDCServer(oidcServerSettings, verbose);			
 		}
 		else{
 			return getUPAuthData();

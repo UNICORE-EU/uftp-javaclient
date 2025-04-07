@@ -4,7 +4,7 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
-UFTP Client 2.2.1 (released Mar 31, 2025)
+UFTP Client 2.2.1 (released Apr 07, 2025)
 -----------------------------------------
  - fix: report server errors that occurred during the actual
    data transfer

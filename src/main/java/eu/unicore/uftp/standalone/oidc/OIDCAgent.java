@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import eu.unicore.services.restclient.IAuthCallback;
 
-public class OIDCAgentAuth implements IAuthCallback {
+public class OIDCAgent implements IAuthCallback {
 
 	private final String account;
 
@@ -13,7 +13,7 @@ public class OIDCAgentAuth implements IAuthCallback {
 
 	private String token;
 
-	public OIDCAgentAuth(String account) {
+	public OIDCAgent(String account) {
 		this.account = account;
 	}
 

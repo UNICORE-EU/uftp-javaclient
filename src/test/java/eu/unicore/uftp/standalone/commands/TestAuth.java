@@ -20,7 +20,7 @@ import eu.unicore.uftp.standalone.BaseServiceTest;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
-import eu.unicore.uftp.standalone.oidc.OIDCAgentAuth;
+import eu.unicore.uftp.standalone.oidc.OIDCAgent;
 import eu.unicore.uftp.standalone.oidc.OIDCAgentProxy;
 import eu.unicore.uftp.standalone.ssh.SshKeyHandler;
 
@@ -107,7 +107,7 @@ public class TestAuth extends BaseServiceTest {
 
 	@Test
 	public void testOIDCAgentAuth() throws Exception {
-		var a = new OIDCAgentAuth("test");
+		var a = new OIDCAgent("test");
 		a.setAgentProxy(new MockAP());
 		var m = new HttpGet("https://test");
 		a.addAuthenticationHeaders(m);
@@ -118,7 +118,7 @@ public class TestAuth extends BaseServiceTest {
 
 	@Test
 	public void testOIDCAgentAuthError() throws Exception {
-		var a = new OIDCAgentAuth("wrong_account");
+		var a = new OIDCAgent("wrong_account");
 		a.setAgentProxy(new MockAP());
 		var m = new HttpGet("https://test");
 		assertThrows(RuntimeException.class,()->{
