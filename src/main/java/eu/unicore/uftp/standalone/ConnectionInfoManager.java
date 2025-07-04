@@ -1,8 +1,8 @@
 package eu.unicore.uftp.standalone;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,11 +127,11 @@ public class ConnectionInfoManager {
         if(paths.length>1 && FilenameUtils.normalize(paths[1], true)!=null){
         	path = FilenameUtils.normalize(paths[1], true);
         	if(path.startsWith("/")) {
-        		Path p = Path.of(path);
-        		Path parent = path.endsWith("/")? p: p.getParent();
-        		String filename = path.endsWith("/")? "." : p.getFileName().toString();
+        		File p = new File(path);
+                File parent = path.endsWith("/")? p: p.getParentFile();
+        		String filename = path.endsWith("/")? "." : p.getName();
         		if(parent!=null) {
-        			parameters.put("basedir", parent.toString());
+        			parameters.put("basedir", FilenameUtils.separatorsToUnix(parent.getPath()));
         			parameters.put("filename", filename);
         		}
         		else {
