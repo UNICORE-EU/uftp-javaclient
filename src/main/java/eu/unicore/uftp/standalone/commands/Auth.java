@@ -27,7 +27,7 @@ public class Auth extends DataTransferCommand {
 		options.addOption(Option.builder("p").longOpt("persistent")
 				.desc("Allow multiple FTP sessions with the same password (e.g. for 'curlftpfs')")
 				.required(false)
-				.build());
+				.get());
 		return options;
 	}
 

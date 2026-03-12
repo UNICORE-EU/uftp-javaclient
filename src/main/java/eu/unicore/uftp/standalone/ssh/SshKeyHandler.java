@@ -4,13 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-import org.apache.commons.codec.binary.Base64;
-
 import eu.emi.security.authn.x509.helpers.PasswordSupplier;
 import eu.unicore.services.restclient.IAuthCallback;
 import eu.unicore.services.restclient.sshkey.SSHKey;
-import eu.unicore.services.restclient.sshkey.SSHKeyUC;
-import eu.unicore.services.restclient.sshkey.SSHUtils;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.util.ConsoleUtils;
 import eu.unicore.util.Log;
@@ -28,25 +24,15 @@ public class SshKeyHandler {
 
 	private final String userName;
 
-	private final String token;
-
 	private final boolean verbose;
 
 	// will use agent with a user-selected identity
 	private boolean selectIdentity = false;
 
-	private boolean preferJWT = false;
-
-	public SshKeyHandler(File privateKey, String userName, String token, boolean verbose) {
+	public SshKeyHandler(File privateKey, String userName, boolean verbose) {
 		this.verbose = verbose;
 		this.privateKey = privateKey;
 		this.userName = userName;
-		this.token = token;
-		this.preferJWT = Boolean.parseBoolean(Utils.getProperty("UFTP_SSH_PREFER_JWT", "false"));
-		if(preferJWT) {
-			// can't sign JWT using the agent
-			System.setProperty("UFTP_NO_AGENT", "true");
-		}
 	}
 
 	public IAuthCallback getAuthData() throws Exception {
@@ -69,10 +55,6 @@ public class SshKeyHandler {
 		this.selectIdentity = true;
 	}
 
-	public void setPreferJWT(boolean preferJWT) {
-		this.preferJWT = preferJWT;
-	}
-
 	protected IAuthCallback create() throws GeneralSecurityException, IOException {
 		if(privateKey == null || !privateKey.exists()){
 			throw new IOException("No private key found!");
@@ -93,14 +75,7 @@ public class SshKeyHandler {
 				return _p;
 			}
 		};
-		if(preferJWT) {
-			return new SSHKey(userName, privateKey, pf);
-		}
-		else {
-			SSHKeyUC sshauth = SSHUtils.createAuthData(privateKey, pf , token);
-			sshauth.username = userName;
-			return sshauth;
-		}
+		return new SSHKey(userName, privateKey, pf);
 	}
 
 	protected IAuthCallback useAgent() throws Exception {
@@ -113,12 +88,7 @@ public class SshKeyHandler {
 				return null;
 			}
 		}
-		byte[] signature = agent.sign(token);
-		SSHKeyUC authData = new SSHKeyUC();
-		authData.signature = new String(Base64.encodeBase64(signature));
-		authData.token = new String(Base64.encodeBase64(token.getBytes()));
-		authData.username= userName;
-		return authData;
+		return new SSHAgentKey(userName, agent);
 	}
 
 }

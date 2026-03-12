@@ -67,7 +67,7 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		try(Formatter f = new Formatter(sb, null)){
 			String crlf = System.getProperty("line.separator");
 			f.format("Client identity:    %s%s", getID(info),crlf);
-			f.format("Client auth method: %s%s", authData.getType(),crlf);
+			f.format("Client auth method: %s%s", authData.getClass().getSimpleName(),crlf);
 			f.format("Auth server type:   UNICORE/X v%s%s", getServerVersion(info), crlf);
 			f.format("Remote user info:   %s%s", getUserInfo(info), crlf);
 			try {

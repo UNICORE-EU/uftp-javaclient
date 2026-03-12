@@ -7,7 +7,7 @@ if [ ! -e ${HOME}/.uftp/ ]; then
     mkdir -m 700 ${HOME}/.uftp/
 fi
 
-
+shopt -s nullglob
 for f in /etc/unicore/uftp/*; do
     if [ ! -e ${HOME}/.uftp/`basename $f` ]; then
 	cp $f ${HOME}/.uftp/`basename $f`

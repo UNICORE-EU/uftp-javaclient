@@ -46,12 +46,12 @@ public class Checksum extends RangedCommand {
 		options.addOption(Option.builder("r").longOpt("recurse")
 				.desc("Recurse into subdirectories, if applicable")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("a").longOpt("algorithm")
 				.desc("Hash algorithm to use. One of: MD5(default), SHA-1, SHA-256, SHA-512")
 				.required(false)
 				.hasArg()
-				.build());
+				.get());
 		return options;
 	}
 

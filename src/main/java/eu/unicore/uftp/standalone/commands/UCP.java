@@ -82,33 +82,33 @@ public class UCP extends DataTransferCommand {
 		options.addOption(Option.builder("R").longOpt("resume")
 				.desc("Check existing target file(s) and try to resume")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("r").longOpt("recurse")
 				.desc("Recurse into subdirectories, if applicable")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("p").longOpt("preserve")
 				.desc("Preserve file modification timestamp")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("t").longOpt("threads")
 				.desc("Use specified number of UFTP connections (threads)")
 				.required(false)
 				.hasArg()
-				.build());
+				.get());
 		options.addOption(Option.builder("T").longOpt("split-threshold")
 				.desc("Minimum size for files to be transferred using multiple threads (with 't')")
 				.required(false)
 				.hasArg()
-				.build());
+				.get());
 		options.addOption(Option.builder("a").longOpt("archive")
 				.desc("Tell server to interpret data as tar/zip stream and unpack it")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("D").longOpt("show-performance")
 				.desc("Show detailed transfer rates during the transfer")
 				.required(false)
-				.build());
+				.get());
 		return options;
 	}
 

@@ -1,5 +1,7 @@
 package eu.unicore.uftp.standalone.commands;
 
+import java.io.IOException;
+
 import org.apache.commons.cli.ParseException;
 
 /**
@@ -14,7 +16,7 @@ public interface ICommand {
 	
 	public void parseOptions(String[] args) throws ParseException;
 
-	public void printUsage();
+	public void printUsage() throws IOException;
 
 	public String getArgumentDescription();
 	
@@ -22,4 +24,6 @@ public interface ICommand {
 	
 	public boolean runCommand() throws Exception;
 
+
+	public static final String _newline = System.getProperty("line.separator");  
 }

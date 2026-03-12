@@ -39,22 +39,22 @@ public class IssueToken extends Command {
 				.argName("Lifetime")
 				.hasArg()
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("L")
 				.longOpt("limited")
 				.desc("Token should be limited to the issuing server")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("R")
 				.longOpt("renewable")
 				.desc("Token can be used to get a fresh token.")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("I")
 				.longOpt("inspect")
 				.desc("Inspect the issued token")
 				.required(false)
-				.build());
+				.get());
 		return options;
 	}
 

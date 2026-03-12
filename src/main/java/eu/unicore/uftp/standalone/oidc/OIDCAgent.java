@@ -22,7 +22,7 @@ public class OIDCAgent implements IAuthCallback {
 		if(token==null) {
 			retrieveToken();
 		}
-		httpMessage.setHeader("Authorization","Bearer "+token);
+		httpMessage.setHeader("Authorization", "Bearer "+token);
 	}
 
 	protected void retrieveToken() {
@@ -52,11 +52,6 @@ public class OIDCAgent implements IAuthCallback {
 			if(!OIDCAgentProxy.isConnectorAvailable())throw new RuntimeException("oidc-agent is not available");
 			ap = new OIDCAgentProxy();
 		}
-	}
-
-	@Override
-	public String getType() {
-		return "OIDC-AGENT";
 	}
 
 	// unit testing

@@ -23,7 +23,7 @@ public abstract class RangedCommand extends Command {
 				.desc("Byte range")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_TRANSFER);
+				.get(), UOptions.GRP_TRANSFER);
 		return options;
 	}
 	

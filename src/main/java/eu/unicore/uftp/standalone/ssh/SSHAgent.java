@@ -1,12 +1,13 @@
 package eu.unicore.uftp.standalone.ssh;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64;
@@ -17,26 +18,26 @@ import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.util.Arrays;
 
-import com.jcraft.jsch.agentproxy.AgentProxy;
-import com.jcraft.jsch.agentproxy.Buffer;
-import com.jcraft.jsch.agentproxy.Identity;
-import com.jcraft.jsch.agentproxy.USocketFactory;
-import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.impl.EdDSAProvider;
+import com.nimbusds.jose.crypto.impl.RSASSAProvider;
+import com.nimbusds.jose.jca.JCAContext;
+import com.nimbusds.jose.util.Base64URL;
 
 import eu.unicore.uftp.dpc.Utils;
-import jnr.unixsocket.UnixSocket;
-import jnr.unixsocket.UnixSocketAddress;
-import jnr.unixsocket.UnixSocketChannel;
+import eu.unicore.uftp.standalone.ssh.SSHAgentProxy.Identity;
 
 /**
- * support for SSH-Agent using jsch-agent-proxy<br/>
- * https://github.com/ymnk/jsch-agent-proxy/blob/master/README.md
+ * support for ssh-agent
  *
  * @author schuller
  */
 public class SSHAgent {
 
-	private AgentProxy ap ;
+	private SSHAgentProxy ap ;
 
 	private String keyFile;
 
@@ -46,8 +47,7 @@ public class SSHAgent {
 
 	public SSHAgent() throws Exception {
 		if(!isAgentAvailable())throw new IOException("SSH-Agent is not available");
-		ap = new AgentProxy(new SSHAgentConnector(new MyFactory()));
-		if(!ap.isRunning())throw new IOException("Error communicating with ssh-agent");
+		ap = new SSHAgentProxy();
 	}
 
 	/**
@@ -86,30 +86,18 @@ public class SSHAgent {
 	}
 
 	/**
-	 * create signature for the given plaintext token
-	 * @param data - plaintext token. It will be sha1-hashed and then signed
+	 * create signature for the given data
+	 * @param data - data to sign
 	 * @return signature (only the actual signature data without any headers)
 	 * @throws GeneralSecurityException
 	 */
-	public byte[] sign(String data) throws GeneralSecurityException, IOException {
-		byte[] signature = null;
-		if(id==null) {
-			Identity[] ids = ap.getIdentities();
-			if(ids.length>1 && verbose) {
-				System.err.println("NOTE: more than one identity in SSH agent -"
-						+ " you might want to use '--identity <path_to_private_key>'");
-			}
-			if(ids.length==0)throw new GeneralSecurityException("No identities loaded in SSH agent!");
-			id = ids[0];
-		}
+	public byte[] sign(byte[] data) throws GeneralSecurityException, IOException {
+		assertIdentity();
 		byte[] blob = id.getBlob();
-		byte[] rawSignature = ap.sign(blob, data.getBytes());
-		//raw sig from agent contains a few extra bytes
-		Buffer buf = new Buffer(rawSignature);
-		String description = new String(buf.getString());
+		byte[] rawSignature = ap.sign(blob, data);
+		String description = getSignatureAlgorithm(rawSignature);
 		int offset = 8 + description.length();
-
-		signature = new byte[rawSignature.length-offset];
+		byte[] signature = new byte[rawSignature.length-offset];
 		System.arraycopy(rawSignature, offset, signature, 0, signature.length);
 		if(description.contains("ssh-dss")){
 			try{
@@ -122,20 +110,36 @@ public class SSHAgent {
 		return signature;
 	}
 
-	public AgentProxy getAgent(){
-		return ap;
+	private String getSignatureAlgorithm(byte[]signature) throws IOException, GeneralSecurityException {
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(signature));
+		int len = dis.readInt();
+		return new String(dis.readNBytes(len));
 	}
 
-	public static boolean isAgentAvailable(){
-		if(Boolean.parseBoolean(Utils.getProperty("UFTP_NO_AGENT", "false"))){
-			if(verbose) {
-				System.err.println("Agent DISABLED via environment setting 'UFTP_NO_AGENT'");
+	public String getAlgorithm() throws IOException, GeneralSecurityException {
+		assertIdentity();
+		return getAlgorithm(id);
+	}
+
+	private String getAlgorithm(Identity identity) throws IOException{
+		byte[] blob = identity.getBlob();
+		byte[] rawSignature = ap.sign(blob, "test123".getBytes());
+		DataInputStream dis = new DataInputStream(new ByteArrayInputStream(rawSignature));
+		int len = dis.readInt();
+		return new String(dis.readNBytes(len));
+	}
+
+	private void assertIdentity() throws IOException, GeneralSecurityException {
+		if(id==null) {
+			Identity[] ids = ap.getIdentities();
+			if(ids.length>1 && verbose) {
+				System.err.println("NOTE: more than one identity in SSH agent -"
+						+ " you might want to use '--identity <path_to_private_key>'");
 			}
-			return false;
+			if(ids.length==0)throw new GeneralSecurityException("No identities loaded in SSH agent!");
+			id = ids[0];
 		}
-		return SSHAgentConnector.isConnectorAvailable();
 	}
-
 	// signature DSA format
 	private byte[] dsa_convertToDER(byte[] rawSignature) throws IOException {
 		byte[] val = new byte[20];
@@ -151,50 +155,48 @@ public class SSHAgent {
 		return bos.toByteArray();
 	}
 
+	public static boolean isAgentAvailable(){
+		if(Boolean.parseBoolean(Utils.getProperty("UFTP_NO_AGENT", "false"))){
+			if(verbose) {
+				System.err.println("Agent DISABLED via environment setting 'UFTP_NO_AGENT'");
+			}
+			return false;
+		}
+		return SSHAgentProxy.isConnectorAvailable();
+	}
 
-	public static class MySocket extends USocketFactory.Socket {
+	public JWSSigner getSigner() throws IOException, GeneralSecurityException {
+		final Set<JWSAlgorithm> algorithms;
+		String algo = getAlgorithm();
+		if(algo.contains("ssh-ed25519")) {
+			algorithms = EdDSAProvider.SUPPORTED_ALGORITHMS;
+		}else if(algo.contains("rsa")){
+			algorithms = RSASSAProvider.SUPPORTED_ALGORITHMS;
+		}
+		else throw new GeneralSecurityException("Unsupported SSH key signature type: "+algo);
 
-		private final UnixSocket sock;
-		private final InputStream is;
-		private final OutputStream os;
+		return new JWSSigner() {
 
-		public int readFull(byte[] buf, int s, int len) throws IOException {
-			int _len = len;
-			while(len>0){
-				int j = is.read(buf, s, len);
-				if(j<=0)
-					return -1;
-				if(j>0){
-					s+=j;
-					len-=j;
+			@Override
+			public Base64URL sign(JWSHeader header, byte[] signingInput) throws JOSEException {
+				try {
+					return Base64URL.encode(SSHAgent.this.sign(signingInput));
+				} catch (Exception e) {
+					throw new JOSEException(e.getMessage(), e);
 				}
 			}
-			return _len;
-		}
 
-		public void write(byte[] buf, int s, int len) throws IOException {
-			os.write(buf, s, len);
-			os.flush();
-		}
+			@Override
+			public Set<JWSAlgorithm> supportedJWSAlgorithms() {
+				return algorithms;
+			}
 
-		MySocket(UnixSocket sock) throws IOException {
-			this.sock = sock;
-			this.is = sock.getInputStream();
-			this.os = sock.getOutputStream();
-		}
+			private final JCAContext jcaContext = new JCAContext();
 
-		public void close() throws IOException {
-			sock.close();
-		}
+			@Override
+			public JCAContext getJCAContext() {
+				return jcaContext;
+			}
+		};
 	}
-
-	public static class MyFactory implements USocketFactory {
-		@Override
-		public Socket open(String path) throws IOException {
-			UnixSocketAddress addr = new UnixSocketAddress(path);
-			UnixSocket sock = UnixSocketChannel.open(addr).socket();
-			return new MySocket(sock);
-		}
-	}
-
 }

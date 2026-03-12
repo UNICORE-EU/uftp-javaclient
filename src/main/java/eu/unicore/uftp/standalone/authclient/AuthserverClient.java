@@ -99,8 +99,8 @@ public class AuthserverClient implements AuthClient {
 		String infoURL = makeInfoURL(url);
 		try(Formatter f = new Formatter(sb, null)){
 			String crlf = System.getProperty("line.separator");
-			f.format("Client identity:    %s%s", getID(info),crlf);
-			f.format("Client auth method: %s%s", authData.getType(),crlf);
+			f.format("Client identity:    %s%s", getID(info), crlf);
+			f.format("Client auth method: %s%s", authData.getClass().getSimpleName(), crlf);
 			f.format("Auth server type:   AuthServer v%s%s", getServerVersion(info), crlf);
 			for(String key: info.keySet()) {
 				if("client".equals(key) || "server".equals(key))continue;

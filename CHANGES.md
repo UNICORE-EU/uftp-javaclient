@@ -4,6 +4,22 @@ Change log for the UFTP commandline client
 The issue tracker is at
 https://github.com/UNICORE-EU/uftp-javaclient/issues
 
+
+** JAVA VERSION NOTE **
+
+   This release requires Java 17 or later!
+
+
+UFTP Client 2.3.0 (released Mar dd, 2026)
+-----------------------------------------
+ - update to UNICORE 11 base libraries - Java 17 or later is required
+ - new feature: "share" command can be used to update shares, e.g. to
+   set new target path
+ - remove "legacy" style of SSH key authentication - JWT is used always
+ - support signing of JWT tokens via SSH Agent (at least on Linux)
+ - fix: agent signing used "old" sha1 signature (when using RSA key)
+   that unsupported for JWT tokens (resulting in a 403 error)
+
 UFTP Client 2.2.2 (released Jul 04, 2025)
 -----------------------------------------
  - fix: directory handling on Windows was buggy

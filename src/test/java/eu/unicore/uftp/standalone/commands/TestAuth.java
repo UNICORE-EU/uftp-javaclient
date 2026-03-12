@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 
 import eu.unicore.services.restclient.UsernamePassword;
 import eu.unicore.services.restclient.sshkey.SSHKey;
-import eu.unicore.services.restclient.sshkey.SSHKeyUC;
 import eu.unicore.uftp.standalone.BaseServiceTest;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
@@ -79,22 +78,8 @@ public class TestAuth extends BaseServiceTest {
 	}
 
 	@Test
-	public void testSSHKeyOldStyle() throws Exception {
-		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", "123", true);
-		sh.setPreferJWT(false);
-		System.setProperty("UFTP_NO_AGENT", "true");
-		var auth = sh.getAuthData();
-		assertTrue(auth instanceof SSHKeyUC);
-		var m = new HttpGet("https://test");
-		auth.addAuthenticationHeaders(m);
-		var h = m.getHeader("Authorization");
-		assertNotNull(h);
-	}
-
-	@Test
 	public void testSSHKeyJWT() throws Exception {
-		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", "123", true);
-		sh.setPreferJWT(true);
+		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", true);
 		System.setProperty("UFTP_NO_AGENT", "true");
 		var auth = sh.getAuthData();
 		System.out.println(auth);

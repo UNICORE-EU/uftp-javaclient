@@ -26,7 +26,7 @@ public class Info extends Command {
 		options.addOption(Option.builder("R").longOpt("raw")
 				.desc("Print the JSON response from server")
 				.required(false)
-				.build());
+				.get());
 		return options;
 	}
 	

@@ -8,10 +8,10 @@ import java.util.Arrays;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.hc.core5.http.HttpMessage;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
@@ -65,50 +65,50 @@ public abstract class Command implements ICommand {
 		options.addOption(Option.builder("h").longOpt("help")
 				.desc("Show help / usage information")
 				.required(false)
-				.build(), UOptions.GRP_GENERAL);
+				.get(), UOptions.GRP_GENERAL);
 		options.addOption(Option.builder("v").longOpt("verbose")
 				.desc("Be verbose")
 				.required(false)
-				.build(), UOptions.GRP_GENERAL);
+				.get(), UOptions.GRP_GENERAL);
 		options.addOption(Option.builder("u").longOpt("user")
 				.desc("Username for username[:password] or key-based authentication")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_AUTH);
+				.get(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("X").longOpt("client")
 				.desc("Client IP address: address-list")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_GENERAL);
+				.get(), UOptions.GRP_GENERAL);
 		options.addOption(Option.builder("g").longOpt("group")
 				.desc("Requested group membership to be used")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_AUTH);
+				.get(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("A").longOpt("auth")
 				.desc("Bearer token value for authentication")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_AUTH);
+				.get(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("O").longOpt("oidc-agent")
 				.desc("Use oidc-agent with the specified account")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_AUTH);
+				.get(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("o").longOpt("oidc-server")
 				.desc("Get token from OIDC server using the specified settings file")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_AUTH);
+				.get(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("P").longOpt("password")
 				.desc("Interactively query for a missing password")
 				.required(false)
-				.build(), UOptions.GRP_AUTH);
+				.get(), UOptions.GRP_AUTH);
 		options.addOption(Option.builder("i").longOpt("identity")
 				.desc("Identity file (private key) for key-based authentication")
 				.required(false)
 				.hasArg()
-				.build(), UOptions.GRP_AUTH);
+				.get(), UOptions.GRP_AUTH);
 		return options;
 	}
 
@@ -208,50 +208,45 @@ public abstract class Command implements ICommand {
 	 * print help
 	 */
 	@Override
-	public void printUsage() {
+	public void printUsage() throws IOException {
 		message("UFTP Client {}", ClientDispatcher.getVersion());
-
-		HelpFormatter formatter = new HelpFormatter();
-		String newLine=System.getProperty("line.separator");
-
+		HelpFormatter.Builder b = HelpFormatter.builder();
+		b.setShowSince(false);
+		HelpFormatter formatter = b.get();
 		StringBuilder s = new StringBuilder();
-		s.append(getName()).append(" [OPTIONS] ").append(getArgumentDescription()).append(newLine);
-		s.append(getSynopsis()).append(newLine);
-		s.append("Remote URLs are built as follows:").append(newLine);
-		s.append(getRemoteURLExample1()).append(newLine);
-		s.append(getRemoteURLExample2()).append(newLine).append(newLine);
-		s.append("Options:").append(newLine);
-		
-		String syntax = s.toString();
-		
+		s.append("uftp ").append(getName()).append(" [OPTIONS] ").append(getArgumentDescription()).append(_newline);
+		s.append(getSynopsis()).append(_newline);
+		s.append("Remote URLs are built as follows:").append(_newline);
+		s.append(getRemoteURLExample1()).append(_newline);
+		s.append(getRemoteURLExample2()).append(_newline);
 		UOptions options = getOptions();
 		Options def = options.getDefaultOptions();
 		if(def!=null){
-			formatter.printHelp(syntax, def);
+			formatter.printHelp(s.toString(), "", def, "", false);
 		}
-		else{
-			formatter.printHelp(syntax, new Options());
+		else {
+			formatter.printHelp(s.toString(), "", new Options(), "", false);
 		}
 		Options transferOptions = options.getTransferOptions();
 		if(transferOptions!=null){
 			System.out.println();
 			formatter.setSyntaxPrefix("Transfer options:");
-			formatter.printHelp(" "+newLine, transferOptions);
+			formatter.printHelp(""+_newline, "", transferOptions, "", false);
 		}
 		Options authOptions = options.getAuthenticationOptions();
 		if(authOptions!=null){
 			System.out.println();
 			formatter.setSyntaxPrefix("Authentication options:");
-			formatter.printHelp(" "+newLine, authOptions);
+			formatter.printHelp(""+_newline, "", authOptions, "", false);
 		}
 		Options general=options.getGeneralOptions();
 		if(general!=null){
 			System.out.println();
 			formatter.setSyntaxPrefix("General options:");
-			formatter.printHelp(" "+newLine, general);
+			formatter.printHelp(""+_newline, "", general, "", false);
 		}
 	}
-	
+
 	protected String getRemoteURLExample1(){
 		return "* https://<auth_addr>/rest/auth/<SERVER>:<file_path>";
 	}
@@ -273,12 +268,6 @@ public abstract class Command implements ICommand {
 		
 		if(authheader!=null){
 			return new IAuthCallback() {
-
-				@Override
-				public String getType() {
-					return "Header";
-				}
-
 				@Override
 				public void addAuthenticationHeaders(HttpMessage httpMessage) {
 					httpMessage.setHeader("Authorization", authheader);
@@ -302,11 +291,6 @@ public abstract class Command implements ICommand {
 	}
 
 	protected IAuthCallback getSSHAuthData() throws Exception {
-		String token = String.valueOf(System.currentTimeMillis());
-		return getSSHAuthData(token);
-	}
-
-	protected IAuthCallback getSSHAuthData(String token) throws Exception {
 		File keyFile = null;
 		boolean haveAgent = SSHAgent.isAgentAvailable();
 		int numKeys = 0;
@@ -355,7 +339,7 @@ public abstract class Command implements ICommand {
 			if(keyFile!=null){
 				verbose("Using SSH key <{}>", keyFile.getAbsolutePath());
 			}
-		SshKeyHandler ssh = new SshKeyHandler(keyFile, username, token, verbose);
+		SshKeyHandler ssh = new SshKeyHandler(keyFile, username, verbose);
 		if(haveAgent && sshIdentity!=null) {
 			ssh.selectIdentity();
 		}

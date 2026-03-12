@@ -24,7 +24,7 @@ public class ULS extends Command {
 		options.addOption(Option.builder("H").longOpt("human-readable")
 				.desc("Show file sizes with units like k, M, G, ...")
 				.required(false)
-				.build());
+				.get());
 		return options;
 	}
 
@@ -87,7 +87,7 @@ public class ULS extends Command {
 
 	protected void printSingle(FileInfo fi, int width) {
 		StringBuilder info = new StringBuilder();
-		info.append(fi.getIsDirectory());
+		info.append(fi.isDirectory());
 		info.append(fi.getUnixPermissions("-"));
 		if(humanReadable) {
 			info.append(String.format(" %10s ", up.getHumanReadable(fi.getSize())));	

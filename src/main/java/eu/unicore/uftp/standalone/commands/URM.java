@@ -23,11 +23,11 @@ public class URM extends Command {
 		options.addOption(Option.builder("q").longOpt("quiet")
 				.desc("Quiet mode, don't ask for confirmation")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("r").longOpt("recurse")
 				.desc("Delete (sub)directories, if applicable")
 				.required(false)
-				.build());
+				.get());
 		return options;
 	}
 	

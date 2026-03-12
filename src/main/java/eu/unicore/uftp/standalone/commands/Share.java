@@ -39,34 +39,34 @@ public class Share extends Command {
 		options.addOption(Option.builder("l").longOpt("list")
 				.desc("List shares")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("s").longOpt("server")
 				.desc("URL to the share service e.g. <https://host:port/SITE/rest/share/NAME>")
 				.required(false)
 				.hasArg()
-				.build());
+				.get());
 		options.addOption(Option.builder("a").longOpt("access")
 				.desc("Allow access for the specified user")
 				.required(false)
 				.hasArg()
-				.build());
+				.get());
 		options.addOption(Option.builder("w").longOpt("write")
 				.desc("Allow write access to the shared path")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("d").longOpt("delete")
 				.desc("Delete access to the shared path")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("1").longOpt("one-time")
 				.desc("Allow only one access to a share (one-time share)")
 				.required(false)
-				.build());
+				.get());
 		options.addOption(Option.builder("L").longOpt("lifetime")
 				.desc("Limit lifetime of share (in seconds)")
 				.required(false)
 				.hasArg()
-				.build());
+				.get());
 		return options;
 	}
 

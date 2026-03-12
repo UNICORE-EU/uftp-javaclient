@@ -33,20 +33,20 @@ public abstract class DataTransferCommand extends RangedCommand {
 				.desc("Number of TCP streams per connection/thread")
 				.required(false)
 				.hasArg().argName("Streams")
-				.build(), UOptions.GRP_TRANSFER);
+				.get(), UOptions.GRP_TRANSFER);
 		options.addOption(Option.builder("E").longOpt("encrypt")
 				.desc("Encrypt data connections")
 				.required(false)
-				.build(), UOptions.GRP_TRANSFER);
+				.get(), UOptions.GRP_TRANSFER);
 		options.addOption(Option.builder("C").longOpt("compress")
 				.desc("Compress data for transfer")
 				.required(false)
-				.build(), UOptions.GRP_TRANSFER);
+				.get(), UOptions.GRP_TRANSFER);
 		options.addOption(Option.builder("K").longOpt("bandwith-limit")
 				.desc("Limit bandwith per FTP connection (bytes per second)")
 				.required(false)
 				.hasArg().argName("BandwithLimit")
-				.build(), UOptions.GRP_TRANSFER);
+				.get(), UOptions.GRP_TRANSFER);
 		return options;
 	}
 	
