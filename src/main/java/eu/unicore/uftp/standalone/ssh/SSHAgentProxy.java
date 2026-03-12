@@ -47,8 +47,7 @@ public class SSHAgentProxy {
 	/**
 	 * @param blob - identity to use
 	 * @param data - data to sign
-	 * @param useRSA_SHA2_256 - if true, the new style RSA signature will be used
-	 * @return
+	 * @return signature
 	 * @throws IOException
 	 */
 	public synchronized byte[] sign(byte[] blob, byte[] data) throws IOException {

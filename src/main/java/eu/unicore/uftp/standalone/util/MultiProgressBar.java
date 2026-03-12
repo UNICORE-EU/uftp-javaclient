@@ -12,6 +12,7 @@ import org.jline.terminal.Terminal.Signal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.InfoCmp.Capability;
 
+import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.client.UFTPProgressListener2;
 import eu.unicore.uftp.standalone.util.ClientPool.TransferTracker;
 

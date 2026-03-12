@@ -333,12 +333,12 @@ public abstract class Command implements ICommand {
 				throw new IOException("Private key file " + sshIdentity + " does not exist.");
 			}
 		}
-			if(haveAgent) {
-				verbose("Using SSH agent");
-			}
-			if(keyFile!=null){
-				verbose("Using SSH key <{}>", keyFile.getAbsolutePath());
-			}
+		if(haveAgent) {
+			verbose("Using SSH agent");
+		}
+		if(keyFile!=null){
+			verbose("Using SSH key <{}>", keyFile.getAbsolutePath());
+		}
 		SshKeyHandler ssh = new SshKeyHandler(keyFile, username, verbose);
 		if(haveAgent && sshIdentity!=null) {
 			ssh.selectIdentity();

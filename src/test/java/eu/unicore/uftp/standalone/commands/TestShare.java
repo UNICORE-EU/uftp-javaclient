@@ -44,14 +44,22 @@ public class TestShare extends BaseServiceTest {
     	File src = new File(testsDir, "file.dat");
     	FileUtils.writeStringToFile(src, "test123", "UTF-8");
     	
-    	// share and download
+    	// share
     	String[] args = new String[]{ new Share().getName(),
     			"-u", "demouser:test123", "-v", 
     			"--server", getShareURL(),
-    			"--lifetime", "120",
     			src.getAbsolutePath()
     	};
     	assertEquals(0, ClientDispatcher._main(args));
+    	// update
+    	args = new String[]{ new Share().getName(),
+    			"-u", "demouser:test123", "-v", 
+    			"--server", getShareURL(),
+    			"--lifetime", "120",
+    			"--update", Share._lastShare.getJSONObject("share").getString("id")
+    	};
+    	assertEquals(0, ClientDispatcher._main(args));
+    	// download
     	args = new String[]{ new Share().getName(),
     			"-u", "demouser:test123", "-l",
     			"--server", getShareURL() };
@@ -65,7 +73,7 @@ public class TestShare extends BaseServiceTest {
     			uftpURL, target.getAbsolutePath() };
     	assertEquals(0, ClientDispatcher._main(args));
     	assertEquals(Utils.md5(src), Utils.md5(target));
-    	
+ 
     	args = new String[]{ new Share().getName(),
     			"-u", "demouser:test123",
     			"--server", getShareURL(),

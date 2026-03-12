@@ -22,6 +22,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 
+import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.client.FileInfo;
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
@@ -35,7 +36,6 @@ import eu.unicore.uftp.standalone.util.ClientPool.TransferTracker;
 import eu.unicore.uftp.standalone.util.RangeMode;
 import eu.unicore.uftp.standalone.util.ResumeMode;
 import eu.unicore.uftp.standalone.util.UOptions;
-import eu.unicore.uftp.standalone.util.UnitParser;
 import eu.unicore.util.Log;
 import eu.unicore.util.Pair;
 

@@ -3,10 +3,10 @@ package eu.unicore.uftp.standalone.commands;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 
+import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UOptions;
-import eu.unicore.uftp.standalone.util.UnitParser;
 
 /**
  * handles options related to data connections 

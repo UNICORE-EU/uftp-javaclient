@@ -8,11 +8,11 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 
+import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.client.FileInfo;
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UOptions;
-import eu.unicore.uftp.standalone.util.UnitParser;
 
 public class ULS extends Command {
 

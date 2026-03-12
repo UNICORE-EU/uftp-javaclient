@@ -2,9 +2,9 @@ package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
 
+import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.standalone.util.RangeMode;
 import eu.unicore.uftp.standalone.util.UOptions;
-import eu.unicore.uftp.standalone.util.UnitParser;
 
 public abstract class RangedCommand extends Command {
 
