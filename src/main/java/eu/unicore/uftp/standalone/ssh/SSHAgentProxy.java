@@ -9,7 +9,7 @@ import java.net.UnixDomainSocketAddress;
 import java.nio.channels.Channels;
 import java.nio.channels.SocketChannel;
 
-import org.h2.util.Utils;
+import eu.unicore.uftp.dpc.Utils;
 
 /**
  * Support for signing via the ssh-agent
@@ -22,7 +22,7 @@ public class SSHAgentProxy {
 
 	private static final String socketName = "SSH_AUTH_SOCK";
 
-	private boolean use_RSA_SHA2_256 = ! Utils.getProperty("UFTP_AGENT_USE_OLD_SIGNATURE", false);
+	private boolean use_RSA_SHA2_256 = !Boolean.parseBoolean(Utils.getProperty("UFTP_AGENT_USE_OLD_SIGNATURE", "false"));
 
 	public static boolean isConnectorAvailable(){
 		return System.getenv(socketName)!=null;
