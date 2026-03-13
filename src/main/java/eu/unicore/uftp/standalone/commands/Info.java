@@ -1,7 +1,6 @@
 package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 import org.json.JSONObject;
 
 import eu.unicore.uftp.standalone.ClientFacade;
@@ -31,7 +30,7 @@ public class Info extends Command {
 	}
 	
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		raw = line.hasOption('R');
 	}

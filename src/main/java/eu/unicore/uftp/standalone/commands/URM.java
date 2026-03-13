@@ -1,7 +1,6 @@
 package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -32,7 +31,7 @@ public class URM extends Command {
 	}
 	
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		quiet = line.hasOption('q');
 		recurse = line.hasOption('r');

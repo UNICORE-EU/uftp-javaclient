@@ -72,8 +72,11 @@ public final class ClientDispatcher {
 			cmd.printUsage();
 			return 0;
 		}
-		cmd.parseOptions(cmdArgs);
-		boolean OK = cmd.runCommand();
+		boolean OK = false;
+		try{
+			cmd.parseOptions(cmdArgs);
+			OK = cmd.runCommand();
+		}catch(IllegalStateException e) {}
 		return OK ? 0 : 1;
 	}
 

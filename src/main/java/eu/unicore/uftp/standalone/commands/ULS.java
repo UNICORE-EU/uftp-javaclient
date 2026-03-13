@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 
 import eu.unicore.services.restclient.utils.UnitParser;
@@ -29,7 +28,7 @@ public class ULS extends Command {
 	}
 
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		humanReadable = line.hasOption('H');
 	}

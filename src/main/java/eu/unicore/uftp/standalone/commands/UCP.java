@@ -10,10 +10,10 @@ import java.net.URISyntaxException;
 import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -59,7 +59,9 @@ public class UCP extends DataTransferCommand {
 
 	protected ClientFacade client;
 
-	protected final List<Pair<TransferTask,Future<Boolean>>> tasks = new ArrayList<>();
+	protected int retryCount = 0;
+
+	protected final Queue<Pair<TransferTask,Future<Boolean>>> tasks = new ConcurrentLinkedQueue<>();
 
 	@Override
 	public String getName() {
@@ -95,11 +97,13 @@ public class UCP extends DataTransferCommand {
 				.desc("Use specified number of UFTP connections (threads)")
 				.required(false)
 				.hasArg()
+				.argName("threadCount")
 				.get());
 		options.addOption(Option.builder("T").longOpt("split-threshold")
-				.desc("Minimum size for files to be transferred using multiple threads (with 't')")
+				.desc("Minimum size for files to be transferred in multiple chunks (with 't')")
 				.required(false)
 				.hasArg()
+				.argName("splitThreshold")
 				.get());
 		options.addOption(Option.builder("a").longOpt("archive")
 				.desc("Tell server to interpret data as tar/zip stream and unpack it")
@@ -109,11 +113,17 @@ public class UCP extends DataTransferCommand {
 				.desc("Show detailed transfer rates during the transfer")
 				.required(false)
 				.get());
+		options.addOption(Option.builder("Y").longOpt("retry-failed-tasks")
+				.desc("How many times to re-try failed transfer tasks (defaults to '0')")
+				.required(false)
+				.hasArg()
+				.argName("retryCount")
+				.get());
 		return options;
 	}
 
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		if(fileArgs.length<2){
 			throw new IllegalArgumentException("Missing argument: "+getArgumentDescription());
@@ -165,6 +175,11 @@ public class UCP extends DataTransferCommand {
 		if(doResume) {
 			verbose("Resume mode {} enabled.", resume);
 		}
+		if (line.hasOption('Y')) {
+			retryCount = Integer.parseInt(line.getOptionValue('Y'));
+			verbose("Will re-try failed transfer tasks <{}> times.", retryCount);
+
+		}
 	}
 
 	@Override
@@ -175,16 +190,17 @@ public class UCP extends DataTransferCommand {
 		String[] sources = new String[len];
 		System.arraycopy(fileArgs, 0, sources, 0, len);
 		cp(sources, target);
-
 		long totalSize = 0;
 		for(Pair<TransferTask,Future<Boolean>> tp: tasks) {
 			Future<Boolean> f = tp.getM2();
 			TransferTask t = tp.getM1();
-			try{
-				f.get();
+			Boolean success = f.get();
+			if(success) {
 				totalSize += t.getDataSize();
-			}catch(Exception e){
-				message(Log.createFaultMessage("ERROR in <"+t.getId()+">", e));
+			}else {
+				if(t.getLastError()!=null) {
+					message(Log.createFaultMessage("ERROR in <"+t.getId()+">", t.getLastError()));
+				}
 			}
 		}
 		if(totalSize>0) {
@@ -224,7 +240,8 @@ public class UCP extends DataTransferCommand {
 				remotePath=".";
 			}
 			RecursivePolicy policy = recurse ? RecursivePolicy.RECURSIVE : RecursivePolicy.NONRECURSIVE;
-			try(ClientPool pool = new ClientPool(tasks, numClients, client, destinationURL, verbose, showPerformance)){
+			try(ClientPool pool = new ClientPool(tasks, numClients, client, destinationURL,
+					verbose, showPerformance, retryCount)){
 				for(String localSource: localSources) {
 					LocalFileCrawler fileList = new LocalFileCrawler(localSource, remotePath, sc, policy);
 					fileList.crawl( (src, dest)-> executeSingleFileUpload(src, dest, pool, sc));
@@ -287,7 +304,7 @@ public class UCP extends DataTransferCommand {
 		for(int i = 0; i<numChunks; i++){
 			final long end = last;
 			final long first =  i<numChunks-1 ? end - chunkSize : start;
-			TransferTask task = getUploadChunkTask(remotePath, localFileID, first, end, resumeMode);
+			TransferTask task = getUploadChunkTask(pool, remotePath, localFileID, first, end, resumeMode);
 			String id = numChunks>1 ?
 					String.format("%s->%s [%0"+width+"d/%d]", localFileID, remotePath, i+1, numChunks):
 					shortID;
@@ -299,9 +316,9 @@ public class UCP extends DataTransferCommand {
 		}
 	}
 
-	private TransferTask getUploadChunkTask(final String remote, String local, final long start, final long end, final ResumeMode resumeMode)
+	private TransferTask getUploadChunkTask(ClientPool pool, final String remote, String local, final long start, final long end, final ResumeMode resumeMode)
 			throws IOException {
-		TransferTask task = new TransferTask() {
+		TransferTask task = new TransferTask(pool) {
 			@Override
 			public void doCall()throws Exception {
 				if(ResumeMode.CHECKSUM.equals(resumeMode)) {
@@ -340,7 +357,8 @@ public class UCP extends DataTransferCommand {
 		try(UFTPSessionClient sc = client.doConnect(remote)){
 			String path = client.getConnectionManager().getPath();
 			RecursivePolicy policy = recurse ? RecursivePolicy.RECURSIVE : RecursivePolicy.NONRECURSIVE;
-			try(ClientPool pool = new ClientPool(tasks, numClients, client, remote, verbose, showPerformance)){
+			try(ClientPool pool = new ClientPool(tasks, numClients, client, remote,
+					verbose, showPerformance, retryCount)){
 				RemoteFileCrawler fileList = new RemoteFileCrawler(path, destination, sc, policy);
 				fileList.crawl( (src, dest) -> executeSingleFileDownload(src, dest, pool, sc));
 			}
@@ -397,7 +415,7 @@ public class UCP extends DataTransferCommand {
 			long end = i<numChunks-1? first + chunkSize : start+total-1;
 			RangeMode rm = numChunks>1 || !ResumeMode.NONE.equals(resume) ?
 					RangeMode.READ_WRITE : rangeMode;
-			TransferTask task = getDownloadChunkTask(remotePath, local, first, end,
+			TransferTask task = getDownloadChunkTask(pool, remotePath, local, first, end,
 						remoteInfo, rm, resumeMode);
 			String id = numChunks>1 ?
 					String.format("%s->%s [%0"+width+"d/%d]", remotePath, local, i+1, numChunks):
@@ -410,16 +428,19 @@ public class UCP extends DataTransferCommand {
 		}
 	}
 
-	private TransferTask getDownloadChunkTask(String remotePath, String dest, long start, long end, FileInfo fi,
+	private TransferTask getDownloadChunkTask(ClientPool pool, String remotePath, String dest, long start, long end, FileInfo fi,
 			final RangeMode rangeMode, final ResumeMode resumeMode)
 					throws FileNotFoundException, URISyntaxException, IOException{
-		TransferTask task = new TransferTask() {
+		TransferTask task = new TransferTask(pool) {
 			public void doCall() throws Exception {
 				if(ResumeMode.CHECKSUM.equals(resumeMode)) {
 					if(checksumMatches(dest, remotePath, start, end-start+1)) {
 						verbose("Nothing to do for <{}> [{}:{}]", remotePath, start, end);
 						return;
 					}
+				}
+				if(rangeMode==RangeMode.APPEND && isRetrying()) {
+					throw new IllegalStateException("Cannot both append and retry");
 				}
 				UFTPSessionClient sc = getSessionClient();
 				File file = new File(dest);

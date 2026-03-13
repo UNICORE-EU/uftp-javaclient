@@ -3,7 +3,6 @@ package eu.unicore.uftp.standalone.commands;
 import java.util.Map;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.dpc.Utils;
@@ -56,7 +55,7 @@ public class URCP extends DataTransferCommand {
 	}
 
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		if(fileArgs.length<2){
 			throw new IllegalArgumentException("Missing argument: "+getArgumentDescription());

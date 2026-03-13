@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.IOUtils;
 
 import eu.unicore.uftp.client.UFTPSessionClient;
@@ -56,7 +55,7 @@ public class Checksum extends RangedCommand {
 	}
 
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		recurse = line.hasOption('r');
 		if (line.hasOption('a')) {

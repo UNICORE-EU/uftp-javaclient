@@ -2,8 +2,6 @@ package eu.unicore.uftp.standalone.commands;
 
 import java.io.IOException;
 
-import org.apache.commons.cli.ParseException;
-
 /**
  * Provide options and usage information for the various 
  * client commands
@@ -14,7 +12,7 @@ public interface ICommand {
 
 	public String getName();
 	
-	public void parseOptions(String[] args) throws ParseException;
+	public void parseOptions(String[] args) throws Exception;
 
 	public void printUsage() throws IOException;
 

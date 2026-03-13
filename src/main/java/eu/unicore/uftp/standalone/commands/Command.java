@@ -10,7 +10,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.hc.core5.http.HttpMessage;
 import org.apache.logging.log4j.message.ParameterizedMessage;
@@ -113,11 +112,15 @@ public abstract class Command implements ICommand {
 	}
 
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		Options options = getOptions();
 		CommandLineParser parser = new DefaultParser();
 		line = parser.parse(options, args);
 		fileArgs = line.getArgs();
+		if(line.hasOption("h")) {
+			printUsage();
+			throw new IllegalStateException();
+		}
 		if (line.hasOption('v')){
 			verbose = true;
 			verbose("Verbose mode");

@@ -1,7 +1,6 @@
 package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 
 import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.dpc.Utils;
@@ -51,7 +50,7 @@ public abstract class DataTransferCommand extends RangedCommand {
 	}
 	
 	@Override
-	public void parseOptions(String[] args) throws ParseException {
+	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		if (line.hasOption('n')) {
 			streams = Integer.parseInt(line.getOptionValue('n'));
