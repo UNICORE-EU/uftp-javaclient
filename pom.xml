@@ -25,7 +25,7 @@
 
     <auth.version>3.3.0</auth.version>
     <use.version>6.0.0</use.version>
-    <core.version>2.24.0</core.version>
+    <core.version>2.24.1</core.version>
     <jline.version>4.0.4</jline.version>
     <cli.version>1.11.0</cli.version>
     <json.version>20251224</json.version>

@@ -19,6 +19,8 @@ UFTP Client 2.3.0 (released Mar dd, 2026)
  - support signing of JWT tokens via SSH Agent (at least on Linux)
  - fix: agent signing used "old" sha1 signature (when using RSA key)
    that unsupported for JWT tokens (resulting in a 403 error)
+ - improvement: better error reporting in case of unexpected connection
+   breakdowns or FTP session errors
 
 UFTP Client 2.2.2 (released Jul 04, 2025)
 -----------------------------------------

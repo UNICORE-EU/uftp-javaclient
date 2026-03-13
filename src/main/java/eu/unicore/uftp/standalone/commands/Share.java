@@ -195,7 +195,6 @@ public class Share extends Command {
 		_lastShare = info;
 	}
 
-
 	final String format = " %16s | %10s | %8s | %s";
 
 	private void printHeader() {
