@@ -265,7 +265,9 @@ public class UCP extends DataTransferCommand {
 		else{
 			File file = new File(local);
 			long offset = getOffset();
-			long total = getLength()>-1? getLength() : file.length();
+			long avail = file.length()-offset;
+			if(avail<0)avail=0;
+			long numBytes = getLength()>-1? Math.min(getLength(), avail) : avail;
 			if(ResumeMode.APPEND.equals(resume)){
 				boolean targetExists = false;
 				try{
@@ -274,10 +276,10 @@ public class UCP extends DataTransferCommand {
 				}catch(IOException ioe) {
 					// does not exist
 				}
-				total = file.length() - offset;
+				numBytes = file.length() - offset;
 				if(targetExists) {
-					if(total>0){
-						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", dest, offset, total);
+					if(numBytes>0){
+						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", dest, offset, numBytes);
 					}
 					else{
 						verbose("Nothing to do for <{}>", dest);
@@ -285,21 +287,21 @@ public class UCP extends DataTransferCommand {
 					}
 				}
 			}
-			doUpload(pool, file, dest, offset, total, resume);
+			doUpload(pool, file, dest, offset, numBytes, resume);
 		}	
 	}
 
 	private void doUpload(ClientPool pool, final File local, final String remotePath,
-			final long start, final long total, final ResumeMode resumeMode) throws IOException {
-		int numChunks = computeNumChunks(total);
-		long chunkSize = total / numChunks;
-		long last = start+total-1;
+			final long start, final long numBytes, final ResumeMode resumeMode) throws IOException {
+		int numChunks = computeNumChunks(numBytes);
+		long chunkSize = numBytes / numChunks;
+		long last = start+numBytes-1;
 		verbose("Uploading: '{}' --> '{}', start={} length={} numChunks={} chunkSize={}",
-				local.getPath(), remotePath, start, total, numChunks, chunkSize);
+				local.getPath(), remotePath, start, numBytes, numChunks, chunkSize);
 		int width = String.valueOf(numChunks).length();
 		String localFileID = local.getPath();
 		String shortID = localFileID+"->"+remotePath;
-		TransferTracker ti = new TransferTracker(remotePath, total,
+		TransferTracker ti = new TransferTracker(remotePath, numBytes,
 				numChunks, new AtomicInteger(numChunks), new AtomicLong(0));
 		for(int i = 0; i<numChunks; i++){
 			final long end = last;
@@ -375,13 +377,18 @@ public class UCP extends DataTransferCommand {
 		}else{
 			FileInfo fi = sc.stat(remotePath);
 			long offset = getOffset();
-			long total = getLength()>-1? getLength() : fi.getSize();
+			long avail = fi.getSize()-offset;
+			if(avail<0)avail=0;
+			long numBytes = getLength()>-1? Math.min(getLength(), avail): avail;
+			if(numBytes<0) {
+				numBytes = 0;
+			}
 			if(ResumeMode.APPEND.equals(resume)){
 				if(file.exists()) {
 					offset = file.length();
-					total = total - offset;
-					if(total>0){
-						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", remotePath, offset, total);
+					numBytes = numBytes - offset;
+					if(numBytes>0){
+						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", remotePath, offset, numBytes);
 					}
 					else{
 						verbose("Nothing to do for <{}>", remotePath);
@@ -395,24 +402,24 @@ public class UCP extends DataTransferCommand {
 					raf.setLength(0);
 				}catch(Exception e) {}
 			}
-			doDownload(pool, remotePath, dest, fi, offset, total, resume);
+			doDownload(pool, remotePath, dest, fi, offset, numBytes, resume);
 		}
 	}
 
 	private void doDownload(ClientPool pool, final String remotePath, final String local,
-			final FileInfo remoteInfo, final long start, final long total, final ResumeMode resumeMode)
+			final FileInfo remoteInfo, final long start, final long numBytes, final ResumeMode resumeMode)
 			throws URISyntaxException, IOException {
-		int numChunks = computeNumChunks(total);
-		long chunkSize = total / numChunks;
+		int numChunks = computeNumChunks(numBytes);
+		long chunkSize = numBytes / numChunks;
 		verbose("Downloading: '{}' --> '{}', start={} length={} numChunks={} chunkSize={}",
-				remotePath, local, start, total, numChunks, chunkSize);
+				remotePath, local, start, numBytes, numChunks, chunkSize);
 		int width = String.valueOf(numChunks).length();
 		String shortID = remotePath+"->"+local;
-		TransferTracker ti = new TransferTracker(local, total,
+		TransferTracker ti = new TransferTracker(local, numBytes,
 				numChunks, new AtomicInteger(numChunks), new AtomicLong(0));
 		long first = start;
 		for(int i = 0; i<numChunks; i++){
-			long end = i<numChunks-1? first + chunkSize : start+total-1;
+			long end = i<numChunks-1? first + chunkSize : start+numBytes-1;
 			RangeMode rm = numChunks>1 || !ResumeMode.NONE.equals(resume) ?
 					RangeMode.READ_WRITE : rangeMode;
 			TransferTask task = getDownloadChunkTask(pool, remotePath, local, first, end,

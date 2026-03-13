@@ -170,7 +170,7 @@ public class ClientPool implements Closeable {
 		}
 	}
 
-	public static abstract class TransferTask implements Callable<Boolean>, Closeable {
+	public static abstract class TransferTask implements Callable<Boolean> {
 
 		private MultiProgressBar pb = null;
 
@@ -246,22 +246,27 @@ public class ClientPool implements Closeable {
 					transferTracker.start.compareAndExchange(0, System.currentTimeMillis());
 				}
 				doCall();
-				close();
+				((UFTPClientThread)Thread.currentThread()).done();
 			}
 			catch(Exception e) {
 				lastError = e;
 				((UFTPClientThread)Thread.currentThread()).error();
-				if(pb!=null) {
-					pb.closeCurrentThread(Log.getDetailMessage(e));
-				}
 				if(executionCounter<=pool.retryCount) {
 					// re-submit, creating a new task
 					verbose("Re-submitting task {} after error {}", this.getId(), e.getMessage());
+					transferTracker.reset();
+					if(pb!=null) {
+						pb.onRetryDiscard();
+					}
 					pool.submit(this);
+					return Boolean.TRUE;
 				}else {
 					// we give up
 					return Boolean.FALSE;
 				}
+			}
+			if(pb!=null) {
+				pb.closeCurrentThread();
 			}
 			return Boolean.TRUE;
 		}
@@ -272,14 +277,6 @@ public class ClientPool implements Closeable {
 			@SuppressWarnings("resource")
 			String remoteCS = getSessionClient().getHash(remoteFile, offset, size).hash;
 			return localCS.equals(remoteCS);
-		}
-
-		@Override
-		public void close() {
-			if(pb!=null) {
-				pb.closeCurrentThread();
-			}
-			((UFTPClientThread)Thread.currentThread()).done();
 		}
 
 		public void verbose(String msg, Object...params) {
@@ -315,6 +312,10 @@ public class ClientPool implements Closeable {
 
 		public long getBytesTransferred() {
 			return bytesTransferred;
+		}
+
+		public void reset() {
+			bytesTransferred=0;
 		}
 
 		@Override

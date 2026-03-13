@@ -13,19 +13,21 @@ https://github.com/UNICORE-EU/uftp-javaclient/issues
 UFTP Client 2.3.0 (released Mar dd, 2026)
 -----------------------------------------
  - update to UNICORE 11 base libraries - Java 17 or later is required
+ - new feature: "share --update" can be used to update shares, e.g. to
+   set new target path
  - improvement: "cp": new option "--retry-failed-tasks <retryCount>"
    to re-run failed transfer tasks. Cleaner handling and reporting
    of UFTP session errors.
- - new feature: "share --update" can be used to update shares, e.g. to
-   set new target path
+ - improvement: better error reporting in case of unexpected connection
+   breakdowns or FTP session errors
  - improvement: share: nicer format for "--list"; add "--raw" option to
    get the plain JSON; "--lifetime" accepts value with units
  - remove legacy style of SSH key authentication - JWT is used always
  - support signing of JWT tokens via SSH Agent (at least on Linux)
  - fix: agent signing used "old" sha1 signature (when using RSA key)
    that unsupported for JWT tokens (resulting in a 403 error)
- - improvement: better error reporting in case of unexpected connection
-   breakdowns or FTP session errors
+ - fix: "cp" with byte range failed if byte range larger than available
+   data size ("ERROR: premature end of stream ...")
 
 UFTP Client 2.2.2 (released Jul 04, 2025)
 -----------------------------------------

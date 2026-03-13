@@ -25,7 +25,8 @@ import eu.unicore.uftp.standalone.util.ClientPool.TransferTracker;
  */
 public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 
-	private final Terminal terminal;	
+	private final Terminal terminal;
+	private volatile boolean _closed = false;
 	private int width;
 
 	private final UnitParser rateParser=UnitParser.getCapacitiesParser(1);
@@ -79,7 +80,7 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	}
 
 	public synchronized void notifyTotalBytesTransferred(long total){
-		if(terminal==null || total<0)return;
+		if(total<0)return;
 		int i = getThreadIndex();
 		updateRate(i);
 		trackers[i].addBytesTransferred(total-have[i]);
@@ -87,6 +88,13 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 		output();
 	}
 
+	public synchronized void onRetryDiscard(){
+		int i = getThreadIndex();
+		trackers[i]=null;
+		have[i]=0;
+		output();
+	}
+	
 	public void closeCurrentThread(){
 		closeCurrentThread(null);
 	}
@@ -133,8 +141,8 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	public void close(){
 		System.out.println();
 		IOUtils.closeQuietly(terminal);
+		_closed = true;
 	}
-
 
 	private int getThreadIndex(){
 		long currentId = Thread.currentThread().getId();
@@ -160,7 +168,7 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	private String lineSep = System.getProperty("line.separator");
 
 	private void output() {
-		if(terminal==null)return;
+		if(_closed)return;
 		List<String>lines = new ArrayList<>();
 		for(TransferTracker tt: runningTransfers) {
 			int percent = (int)(100.0*tt.getBytesTransferred()/tt.size);
@@ -188,7 +196,7 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	private String getPerThreadPerformance(TransferTracker tt){
 		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<maxThreads;i++){
-			if(!tt.equals(trackers[i]))continue;
+			if(trackers[i]==null || !tt.equals(trackers[i]))continue;
 			if(rate[i]>0){
 				sb.append(String.format("%sB/s ", rateParser.getHumanReadable(rate[i])));
 			}
