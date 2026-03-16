@@ -10,7 +10,7 @@ https://github.com/UNICORE-EU/uftp-javaclient/issues
    This release requires Java 17 or later!
 
 
-UFTP Client 2.3.0 (released Mar dd, 2026)
+UFTP Client 2.3.0 (released Mar 17, 2026)
 -----------------------------------------
  - update to UNICORE 11 base libraries - Java 17 or later is required
  - new feature: "share --update" can be used to update shares, e.g. to
