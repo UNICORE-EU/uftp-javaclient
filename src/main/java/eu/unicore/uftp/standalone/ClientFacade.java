@@ -227,7 +227,6 @@ public class ClientFacade {
 	 * @param params - message parameters
 	 */
 	public void message(String msg, Object ... params) {
-		String f = new ParameterizedMessage(msg, params).getFormattedMessage();
-		System.out.println(f);
+		System.out.println(new ParameterizedMessage(msg, params).getFormattedMessage());
 	}
 }

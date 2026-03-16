@@ -16,8 +16,8 @@ UFTP Client 2.3.0 (released Mar dd, 2026)
  - new feature: "share --update" can be used to update shares, e.g. to
    set new target path
  - improvement: "cp": new option "--retry-failed-tasks <retryCount>"
-   to re-run failed transfer tasks. Cleaner handling and reporting
-   of UFTP session errors.
+   to re-run failed transfer tasks (no re-try by default) 
+   Cleaner handling and reporting of UFTP session errors.
  - improvement: better error reporting in case of unexpected connection
    breakdowns or FTP session errors
  - improvement: share: nicer format for "--list"; add "--raw" option to

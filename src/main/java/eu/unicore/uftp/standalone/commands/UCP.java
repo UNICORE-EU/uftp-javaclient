@@ -177,8 +177,10 @@ public class UCP extends DataTransferCommand {
 		}
 		if (line.hasOption('Y')) {
 			retryCount = Integer.parseInt(line.getOptionValue('Y'));
+			if(retryCount<0) {
+				throw new ParseException("Retry count must be larger than '0'!");
+			}
 			verbose("Will re-try failed transfer tasks <{}> times.", retryCount);
-
 		}
 	}
 
@@ -211,9 +213,6 @@ public class UCP extends DataTransferCommand {
 		}
 	}
 
-	/**
-	 * Entry to the Copy feature
-	 */
 	public void cp(String[] sources, String destination)
 			throws Exception {
 		if (!ConnectionInfoManager.isLocal(destination)) {
@@ -243,14 +242,15 @@ public class UCP extends DataTransferCommand {
 			try(ClientPool pool = new ClientPool(tasks, numClients, client, destinationURL,
 					verbose, showPerformance, retryCount)){
 				for(String localSource: localSources) {
+					boolean isDev = localSource.startsWith("/dev/");
 					LocalFileCrawler fileList = new LocalFileCrawler(localSource, remotePath, sc, policy);
-					fileList.crawl( (src, dest)-> executeSingleFileUpload(src, dest, pool, sc));
+					fileList.crawl( (src, dest)-> executeSingleFileUpload(src, dest, pool, sc, isDev));
 				}
 			}
 		}
 	}
 
-	private void executeSingleFileUpload(String local, String remotePath, ClientPool pool, UFTPSessionClient sc)
+	private void executeSingleFileUpload(String local, String remotePath, ClientPool pool, UFTPSessionClient sc, boolean isDevFile)
 			throws FileNotFoundException, URISyntaxException, IOException {
 		String dest = getFullRemoteDestination(local, remotePath);
 		if(archiveMode) {
@@ -267,7 +267,13 @@ public class UCP extends DataTransferCommand {
 			long offset = getOffset();
 			long avail = file.length()-offset;
 			if(avail<0)avail=0;
-			long numBytes = getLength()>-1? Math.min(getLength(), avail) : avail;
+			long numBytes;
+			if(!isDevFile) {
+				numBytes = getLength()>-1? Math.min(getLength(), avail) : avail;
+			}
+			else {
+				numBytes = getLength()>-1? getLength() : file.length();
+			}
 			if(ResumeMode.APPEND.equals(resume)){
 				boolean targetExists = false;
 				try{
@@ -358,16 +364,17 @@ public class UCP extends DataTransferCommand {
 			throws Exception {
 		try(UFTPSessionClient sc = client.doConnect(remote)){
 			String path = client.getConnectionManager().getPath();
+			boolean isDev = path.startsWith("/dev/");
 			RecursivePolicy policy = recurse ? RecursivePolicy.RECURSIVE : RecursivePolicy.NONRECURSIVE;
 			try(ClientPool pool = new ClientPool(tasks, numClients, client, remote,
 					verbose, showPerformance, retryCount)){
 				RemoteFileCrawler fileList = new RemoteFileCrawler(path, destination, sc, policy);
-				fileList.crawl( (src, dest) -> executeSingleFileDownload(src, dest, pool, sc));
+				fileList.crawl( (src, dest) -> executeSingleFileDownload(src, dest, pool, sc, isDev));
 			}
 		}
 	}
 
-	private void executeSingleFileDownload(String remotePath, String local, ClientPool pool, UFTPSessionClient sc)
+	private void executeSingleFileDownload(String remotePath, String local, ClientPool pool, UFTPSessionClient sc, boolean isDevFile)
 			throws Exception {
 		String dest = getFullLocalDestination(remotePath, local);
 		File file = new File(dest);
@@ -379,7 +386,13 @@ public class UCP extends DataTransferCommand {
 			long offset = getOffset();
 			long avail = fi.getSize()-offset;
 			if(avail<0)avail=0;
-			long numBytes = getLength()>-1? Math.min(getLength(), avail): avail;
+			long numBytes;
+			if(!isDevFile) {
+				numBytes =  getLength()>-1? Math.min(getLength(), avail): avail;
+			}
+			else {
+				numBytes = getLength()>-1? getLength() : fi.getSize();
+			}
 			if(numBytes<0) {
 				numBytes = 0;
 			}

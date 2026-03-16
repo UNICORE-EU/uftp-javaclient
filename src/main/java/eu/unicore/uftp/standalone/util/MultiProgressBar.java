@@ -90,8 +90,10 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 
 	public synchronized void onRetryDiscard(){
 		int i = getThreadIndex();
+		trackers[i].discardBytes(have[i]);
 		trackers[i]=null;
 		have[i]=0;
+		rate[i]=0;
 		output();
 	}
 	
@@ -135,6 +137,14 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 				runningTransfers.remove(tt);
 			}catch(Exception ex) {}
 		}
+	}
+
+	public void println(String line) {
+		if(_closed)return;
+		terminal.writer().write(line);
+		terminal.writer().write(lineSep);
+		terminal.writer().write(lineSep);
+		terminal.flush();
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import java.security.MessageDigest;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -30,15 +31,17 @@ public class ClientPool implements Closeable {
 
 	final ExecutorService es;
 
-	final int poolSize;
+	private final SessionClientPool clients;
 
-	final SessionClientPool clients;
+	private final Queue<Pair<TransferTask,Future<Boolean>>> tasks;
 
-	final Queue<Pair<TransferTask,Future<Boolean>>> tasks;
+	private final Queue<Future<Boolean>> myTasks = new ConcurrentLinkedQueue<>();
 
-	final boolean verbose;
+	private final boolean verbose;
 
-	final int retryCount;
+	private final boolean debug;
+
+	private final int retryCount;
 
 	private MultiProgressBar pb = null;
 
@@ -46,10 +49,10 @@ public class ClientPool implements Closeable {
 			final ClientFacade clientFacade, final String uri,
 			boolean verbose, boolean showPerformance, int retryCount) {
 		this.tasks = tasks;
-		this.clients = new SessionClientPool(clientFacade, uri);
-		this.poolSize = poolSize;
+		this.clients = new SessionClientPool(clientFacade, uri, this);
 		this.verbose = verbose;
 		this.retryCount = retryCount;
+		this.debug = Boolean.parseBoolean(Utils.getProperty("UFTP_DEBUG", "false"));
 		if(showPerformance) {
 			try{
 				this.pb = new MultiProgressBar(poolSize);
@@ -65,13 +68,12 @@ public class ClientPool implements Closeable {
 			public Thread newThread(Runnable r) {
 				if(!createNewThreads) return null;
 				try{
-					UFTPSessionClient client = clientFacade.doConnect(uri);
-					clients.add(client);
+					clients.createNewSession();
 					UFTPClientThread t = new UFTPClientThread(r, clients);
 					t.setName("UFTPClient-"+num.incrementAndGet());
 					return t;
 				}catch(Exception ex){
-					clientFacade.message("Creating new client thread failed: {}", ex);
+					message("Creating new client thread failed: {}", ex);
 					createNewThreads = false;
 					if(num.get()==0) {
 						throw new RuntimeException(ex);
@@ -83,20 +85,36 @@ public class ClientPool implements Closeable {
 	}
 
 	@Override
-	public void close() throws IOException{
-		tasks.forEach(p -> {
-			try{
-				p.getM2().get();
-			}catch(Exception e){}
-		});
+	public void close() throws IOException {
+		boolean complete = true;
+		do {
+			complete = true;
+			var _t = myTasks.iterator();
+			while(_t.hasNext()) {
+				try{
+					if(!_t.next().get())complete=false;
+					_t.remove();
+				}catch(Exception e) {}
+			}
+		}while(!complete);
 		clients.forEach(sc -> IOUtils.closeQuietly(sc));
-		if(pb!=null)pb.close();
+		if(pb!=null) {
+			pb.close();
+		}
+		debug("Shutting down thread pool.");
 		es.shutdown();	
 	}
 
 	public void submit(TransferTask r) {
 		if(pb!=null)r.setProgressListener(pb);
-		tasks.add(new Pair<>(r, es.submit(r)));
+		debug("Submitting transfer task {}", r.getId());		
+		var task = es.submit(r);
+		tasks.add(new Pair<>(r, task));
+		myTasks.add(task);
+	}
+
+	public void debug(String msg, Object ... params) {
+		if(debug)message(msg, params);
 	}
 
 	public void verbose(String msg, Object ... params) {
@@ -104,7 +122,13 @@ public class ClientPool implements Closeable {
 	}
 
 	public void message(String msg, Object ... params) {
-		System.out.println(new ParameterizedMessage(msg, params).getFormattedMessage());
+		String _m = new ParameterizedMessage(msg, params).getFormattedMessage();
+		if(pb!=null) {
+			pb.println(_m);
+		}
+		else {
+			System.out.println(_m);
+		}
 	}
 
 	public static class SessionClientPool extends LinkedBlockingQueue<UFTPSessionClient> {
@@ -112,12 +136,15 @@ public class ClientPool implements Closeable {
 		private static final long serialVersionUID=1l;
 
 		private AtomicInteger numClients = new AtomicInteger(0);
+		private AtomicInteger created = new AtomicInteger(0);
 		private final ClientFacade cf;
 		private final String uri;
-		
-		public SessionClientPool(ClientFacade cf, String uri){
+		private final ClientPool pool;
+
+		public SessionClientPool(ClientFacade cf, String uri, ClientPool pool){
 			this.cf = cf;
 			this.uri = uri;
+			this.pool = pool;
 		}
 
 		@Override
@@ -130,14 +157,20 @@ public class ClientPool implements Closeable {
 		public UFTPSessionClient take() throws InterruptedException {
 			if(numClients.get()==0) {
 				try{
-					add(cf.doConnect(uri));
+					createNewSession();
 				}catch(Exception ex) {
-					cf.message("Creating new UFTP session failed: {}", ex);
+					pool.debug("Creating new UFTP session failed: {}", ex);
 				}
 			}
 			UFTPSessionClient c = super.take();
 			numClients.decrementAndGet();
 			return c;
+		}
+
+		public void createNewSession() throws Exception{
+			int c = created.incrementAndGet();
+			pool.debug("Creating new UFTP session, this is <{}>", c);
+			add(cf.doConnect(uri));
 		}
 	}
 
@@ -166,7 +199,7 @@ public class ClientPool implements Closeable {
 			if(sc!=null) {
 				clients.add(sc);
 			}
-			sc=null;
+			sc = null;
 		}
 	}
 
@@ -237,7 +270,7 @@ public class ClientPool implements Closeable {
 		}
 
 		protected abstract void doCall() throws Exception;
-		
+
 		@Override
 		public Boolean call(){
 			try {
@@ -249,21 +282,20 @@ public class ClientPool implements Closeable {
 				((UFTPClientThread)Thread.currentThread()).done();
 			}
 			catch(Exception e) {
-				lastError = e;
 				((UFTPClientThread)Thread.currentThread()).error();
 				if(executionCounter<=pool.retryCount) {
-					// re-submit, creating a new task
-					verbose("Re-submitting task {} after error {}", this.getId(), e.getMessage());
-					transferTracker.reset();
+					pool.verbose("Re-submitting task {}, attempt {}/{}, error was: <{}>",
+							getId(), 1+executionCounter, 1+pool.retryCount, e.getMessage());
 					if(pb!=null) {
 						pb.onRetryDiscard();
 					}
 					pool.submit(this);
-					return Boolean.TRUE;
-				}else {
-					// we give up
-					return Boolean.FALSE;
 				}
+				else {
+					// we give up
+					lastError = e;
+				}
+				return Boolean.FALSE;
 			}
 			if(pb!=null) {
 				pb.closeCurrentThread();
@@ -271,17 +303,13 @@ public class ClientPool implements Closeable {
 			return Boolean.TRUE;
 		}
 
+		@SuppressWarnings("resource")
 		public boolean checksumMatches(String localFile, String remoteFile, long offset, long size)
 				throws Exception{
-			String localCS = checksum(localFile, offset, size);
-			@SuppressWarnings("resource")
-			String remoteCS = getSessionClient().getHash(remoteFile, offset, size).hash;
-			return localCS.equals(remoteCS);
+			return checksum(localFile, offset, size).equals(
+					getSessionClient().getHash(remoteFile, offset, size).hash);
 		}
 
-		public void verbose(String msg, Object...params) {
-			System.out.println(new ParameterizedMessage(msg, params).getFormattedMessage());
-		}
 	}
 
 	/*
@@ -290,7 +318,6 @@ public class ClientPool implements Closeable {
 	public static class TransferTracker {
 		private static final AtomicInteger transferIdGen = new AtomicInteger(0);
 		public final int transferID = transferIdGen.incrementAndGet();
-
 		public final String file;
 		public final long size;
 		public final AtomicLong start;
@@ -314,8 +341,8 @@ public class ClientPool implements Closeable {
 			return bytesTransferred;
 		}
 
-		public void reset() {
-			bytesTransferred=0;
+		public void discardBytes(long discard) {
+			bytesTransferred-=discard;
 		}
 
 		@Override
