@@ -57,7 +57,7 @@ public class UCP extends DataTransferCommand {
 
 	private boolean showPerformance = false;
 
-	private ClientFacade client;
+	ClientFacade client;
 
 	private int retryCount = 0;
 
