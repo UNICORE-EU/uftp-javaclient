@@ -19,27 +19,37 @@ public class USYNC extends DataTransferCommand {
 	}
 
 	@Override
+	public String getArgumentDescription() {
+		return "<primary> <target>";
+	}
+
+	@Override
+	public String getSynopsis(){
+		return "Sync the target file with the given primary file.";
+	}
+
+	@Override
 	protected void run(ClientFacade client) throws Exception {
 		if(fileArgs.length<2) {
 			throw new IllegalArgumentException("Missing argument: "+getArgumentDescription());
 		}
 		RsyncStats stats = null;
 		UFTPSessionClient sc = null;
-		String master = fileArgs[0];
-		String slave = fileArgs[1];
-		verbose("sync {} (MASTER) -> {} (SLAVE)", master, slave);	
+		String primary = fileArgs[0];
+		String target = fileArgs[1];
+		verbose("sync {} (MASTER) -> {} (SLAVE)", primary, target);	
 		try {
-			if (ConnectionInfoManager.isRemote(master) && ConnectionInfoManager.isLocal(slave)) {
-				sc = client.doConnect(master);
-				Map<String, String> params = client.getConnectionManager().extractConnectionParameters(master);
+			if (ConnectionInfoManager.isRemote(primary) && ConnectionInfoManager.isLocal(target)) {
+				sc = client.doConnect(primary);
+				Map<String, String> params = client.getConnectionManager().extractConnectionParameters(primary);
 				String path = params.get("path");
-				stats = rsyncLocalFile(slave, path, sc);
+				stats = rsyncLocalFile(target, path, sc);
 			}
-			else if (ConnectionInfoManager.isLocal(master) && ConnectionInfoManager.isRemote(slave)) {
-				sc = client.doConnect(slave);
-				Map<String, String> params = client.getConnectionManager().extractConnectionParameters(slave);
+			else if (ConnectionInfoManager.isLocal(primary) && ConnectionInfoManager.isRemote(target)) {
+				sc = client.doConnect(target);
+				Map<String, String> params = client.getConnectionManager().extractConnectionParameters(target);
 				String path = params.get("path");
-				stats =  rsyncRemoteFile(master, path, sc);
+				stats =  rsyncRemoteFile(primary, path, sc);
 			}
 			else {
 				throw new IOException("Need one remote and one local file for sync.");
@@ -52,29 +62,19 @@ public class USYNC extends DataTransferCommand {
 	}
 
 	private RsyncStats rsyncRemoteFile(String local, String remote, UFTPSessionClient sc) throws Exception {
-		File localMaster = new File(local);
-		if (!localMaster.isFile()) {
+		File localPrimary = new File(local);
+		if (!localPrimary.isFile()) {
 			throw new IllegalArgumentException(local + " is not a file");
 		}
-		return sc.syncRemoteFile(localMaster, remote);
+		return sc.syncRemoteFile(localPrimary, remote);
 	}
 
 	private RsyncStats rsyncLocalFile(String local, String remote, UFTPSessionClient sc) throws Exception {
-		File localSlave = new File(local);
-		if (!localSlave.isFile()) {
+		File localTarget = new File(local);
+		if (!localTarget.isFile()) {
 			throw new IllegalArgumentException(local + " is not a file");
 		}
-		return sc.syncLocalFile(remote, localSlave);
-	}
-
-
-	@Override
-	public String getArgumentDescription() {
-		return "<master> <slave>";
-	}
-	
-	public String getSynopsis(){
-		return "Sync a file (the slave) with a master file.";
+		return sc.syncLocalFile(remote, localTarget);
 	}
 
 }

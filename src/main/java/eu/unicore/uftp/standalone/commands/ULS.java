@@ -55,8 +55,7 @@ public class ULS extends Command {
 						System.out.println(path+": ");
 						System.out.println();
 					}
-					List<FileInfo> ls = sc.getFileInfoList(path);
-					printDir(ls);
+					printDir(sc.getFileInfoList(path));
 				}
 				else{
 					printSingle(info, -1);

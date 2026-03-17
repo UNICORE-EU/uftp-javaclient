@@ -18,9 +18,10 @@ UFTP Client 2.3.0 (released Mar 17, 2026)
  - improvement: "cp": new option "--retry-failed-tasks <retryCount>"
    to re-run failed transfer tasks (no re-try by default) 
    Cleaner handling and reporting of UFTP session errors.
+ - improvement: "issue-token": lifetime can be given as value with units
  - improvement: better error reporting in case of unexpected connection
    breakdowns or FTP session errors
- - improvement: share: nicer format for "--list"; add "--raw" option to
+ - improvement: "share": nicer format for "--list"; add "--raw" option to
    get the plain JSON; "--lifetime" accepts value with units
  - remove legacy style of SSH key authentication - JWT is used always
  - support signing of JWT tokens via SSH Agent (at least on Linux)

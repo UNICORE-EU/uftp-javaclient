@@ -50,6 +50,7 @@ public class Checksum extends RangedCommand {
 				.desc("Hash algorithm to use. One of: MD5(default), SHA-1, SHA-256, SHA-512")
 				.required(false)
 				.hasArg()
+				.argName("name")
 				.get());
 		return options;
 	}

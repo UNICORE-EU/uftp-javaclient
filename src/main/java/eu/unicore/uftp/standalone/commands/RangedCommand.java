@@ -20,13 +20,13 @@ public abstract class RangedCommand extends Command {
 	protected UOptions getOptions() {
 		UOptions options = super.getOptions();
 		options.addOption(Option.builder("B").longOpt("bytes")
-				.desc("Byte range")
+				.desc("range")
 				.required(false)
 				.hasArg()
 				.get(), UOptions.GRP_TRANSFER);
 		return options;
 	}
-	
+
 	protected void initRange(String rangeSpec) {
 		String[]tokens = rangeSpec.split("-");
 		try{

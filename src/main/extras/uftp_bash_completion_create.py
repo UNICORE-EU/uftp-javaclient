@@ -33,9 +33,7 @@ def find_options(command):
         if not line.startswith(" -"):
             continue
         else:
-            s = line.split()[0]
-            options.append(s.split(",")[1])
-
+            options.append(line.split()[1])
     return options
 
 
@@ -66,8 +64,7 @@ output = output % {"commands": " ".join(commands),
                    "case_body": case_body}
 
 
-with open(OUTPUT, "w") as f:
-    f.write(output)
-
-p = Popen(["cp", OUTPUT, OUTPUT2])
-p.wait()
+for o in [OUTPUT, OUTPUT2]:
+    with open(o, "w") as f:
+        print("Writing to", o)
+        f.write(output)

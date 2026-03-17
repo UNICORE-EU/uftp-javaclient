@@ -103,7 +103,7 @@ public class UCP extends DataTransferCommand {
 				.desc("Minimum size for files to be transferred in multiple chunks (with 't')")
 				.required(false)
 				.hasArg()
-				.argName("splitThreshold")
+				.argName("size")
 				.get());
 		options.addOption(Option.builder("a").longOpt("archive")
 				.desc("Tell server to interpret data as tar/zip stream and unpack it")

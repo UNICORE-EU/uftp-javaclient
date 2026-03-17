@@ -45,11 +45,13 @@ public class URCP extends DataTransferCommand {
 				.desc("The one-time password for the source side")
 				.required(false)
 				.hasArg()
+				.argName("password")
 				.get());
 		options.addOption(Option.builder("s").longOpt("server")
 				.desc("UFTPD server address in the form host:port")
 				.required(false)
 				.hasArg()
+				.argName("serverAddress")
 				.get());
 		return options;
 	}

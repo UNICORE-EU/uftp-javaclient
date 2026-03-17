@@ -70,10 +70,10 @@ public class Share extends Command {
 				.required(false)
 				.get());
 		options.addOption(Option.builder("L").longOpt("lifetime")
-				.desc("Limit lifetime of share (in seconds)")
+				.desc("Limit lifetime of share")
 				.required(false)
 				.hasArg()
-				.argName("Seconds")
+				.argName("time")
 				.get());
 		options.addOption(Option.builder("U").longOpt("update")
 				.desc("Update share properties, e.g. path")

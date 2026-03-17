@@ -4,6 +4,7 @@ import org.apache.commons.cli.Option;
 import org.json.JSONObject;
 
 import eu.unicore.services.restclient.jwt.JWTUtils;
+import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
@@ -17,14 +18,14 @@ import eu.unicore.uftp.standalone.util.UOptions;
  */
 public class IssueToken extends Command {
 
-	private int lifetime=-1;
+	private long lifetime = -1;
 
 	private boolean limited=false;
-	
-	private boolean renewable=false;
-	
-	private boolean inspect=false;
-	
+
+	private boolean renewable = false;
+
+	private boolean inspect = false;
+
 	@Override
 	public String getName() {
 		return "issue-token";
@@ -35,8 +36,8 @@ public class IssueToken extends Command {
 		UOptions options = super.getOptions();
 		options.addOption(Option.builder("l")
 				.longOpt("lifetime")
-				.desc("Initial lifetime (in seconds) for token.")
-				.argName("Lifetime")
+				.desc("Initial lifetime for token.")
+				.argName("time")
 				.hasArg()
 				.required(false)
 				.get());
@@ -67,7 +68,8 @@ public class IssueToken extends Command {
 		String uri = fileArgs[0];
 		mgr.init(uri);
 		if(line.hasOption("l")){
-			lifetime = Integer.valueOf(line.getOptionValue("l"));
+			UnitParser tp = UnitParser.getTimeParser(0);
+			lifetime = tp.getLongValue(line.getOptionValue("l"));
 		}
 		limited = line.hasOption("L");
 		renewable = line.hasOption("R");
