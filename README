@@ -11,14 +11,17 @@ This is a full-featured client for UFTP. It allows to
  * delete remote files or directories
  * manage shares and access shared data
 
-It supports username/password authentication, token authentication,
-and ssh-key (on Linux) authentication to a UFTP Authentication Server
-or UNICORE/X server.
+It supports the following authentication methods:
+
+ * ssh-keys, including (on Linux) support for ssh-agent
+ * username/password
+ * OIDC
+ * auth tokens
 
 Prerequisites
 *************
 
- * Java 11 (OpenJDK, Oracle, IBM) or later
+ * Java 17 or later (OpenJDK recommended)
 
  * Access to a UFTP authentication service and the corresponding UFTPD
    server. To use the client, you need to know the address of the

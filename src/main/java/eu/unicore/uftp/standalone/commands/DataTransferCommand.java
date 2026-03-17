@@ -16,7 +16,7 @@ import eu.unicore.uftp.standalone.util.UOptions;
 public abstract class DataTransferCommand extends RangedCommand {
 
 	protected int streams = 1;
-	
+
 	protected long bandwithLimit = -1;
 
 	protected boolean compress;
@@ -94,5 +94,5 @@ public abstract class DataTransferCommand extends RangedCommand {
 		client.setCompress(compress);
 		client.setBandwithLimit(bandwithLimit);
 	}
-	
+
 }

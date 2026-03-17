@@ -13,6 +13,16 @@ public class UMKDIR extends Command {
 	}
 
 	@Override
+	public String getArgumentDescription() {
+		return "<remote_directory> ...";	
+	}
+
+	@Override
+	public String getSynopsis() {
+		return "Creates remote directories.";
+	}
+
+	@Override
 	protected void run(ClientFacade client) throws Exception {
 		if(fileArgs.length==0) {
 			throw new IllegalArgumentException("Missing argument: "+getArgumentDescription());
@@ -30,14 +40,4 @@ public class UMKDIR extends Command {
 		}
 	}
 
-	@Override
-	public String getArgumentDescription() {
-		return "<remote_directory> ...";	
-	}
-
-	@Override
-	public String getSynopsis() {
-		return "Creates remote directories.";
-	}
-	
 }

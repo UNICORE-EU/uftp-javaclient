@@ -41,27 +41,27 @@ import eu.unicore.util.Pair;
 
 public class UCP extends DataTransferCommand {
 
-	protected ResumeMode resume = ResumeMode.NONE;
+	private ResumeMode resume = ResumeMode.NONE;
 
-	protected String target;
+	private String target;
 
-	protected boolean recurse = false;
+	private boolean recurse = false;
 
-	protected boolean preserve = false;
+	private boolean preserve = false;
 
-	protected int numClients = 1;
+	private int numClients = 1;
 
-	protected long splitThreshold = -1;
+	private long splitThreshold = -1;
 
-	protected boolean archiveMode = false;
+	private boolean archiveMode = false;
 
-	protected boolean showPerformance = false;
+	private boolean showPerformance = false;
 
-	protected ClientFacade client;
+	private ClientFacade client;
 
-	protected int retryCount = 0;
+	private int retryCount = 0;
 
-	protected final Queue<Pair<TransferTask,Future<Boolean>>> tasks = new ConcurrentLinkedQueue<>();
+	private final Queue<Pair<TransferTask,Future<Boolean>>> tasks = new ConcurrentLinkedQueue<>();
 
 	@Override
 	public String getName() {

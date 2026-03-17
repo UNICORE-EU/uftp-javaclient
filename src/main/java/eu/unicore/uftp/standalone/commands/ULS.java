@@ -15,7 +15,22 @@ import eu.unicore.uftp.standalone.util.UOptions;
 
 public class ULS extends Command {
 
-	boolean humanReadable = false;
+	private boolean humanReadable = false;
+
+	@Override
+	public String getName() {
+		return "ls";
+	}
+
+	@Override
+	public String getArgumentDescription() {
+		return "<remote_directory>";
+	}
+
+	@Override
+	public String getSynopsis() {
+		return "Lists a remote directory.";
+	}
 
 	@Override
 	protected UOptions getOptions() {
@@ -31,11 +46,6 @@ public class ULS extends Command {
 	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		humanReadable = line.hasOption('H');
-	}
-
-	@Override
-	public String getName() {
-		return "ls";
 	}
 
 	@Override
@@ -66,7 +76,7 @@ public class ULS extends Command {
 		}
 	}
 
-	protected void printDir(List<FileInfo> ls) {
+	private void printDir(List<FileInfo> ls) {
 		int width = -1;
 		for (FileInfo item : ls) {
 			width = Math.max(width, String.valueOf(item.getSize()).length());
@@ -76,14 +86,14 @@ public class ULS extends Command {
 		}
 	}
 
-	long sixMonths = 15811200 * 1000l;
+	private final static long sixMonths = 15811200 * 1000l;
 
-	final SimpleDateFormat formatRecent = new SimpleDateFormat("MMM dd HH:mm");
-	final SimpleDateFormat formatOlder = new SimpleDateFormat("MMM dd yyyy");
+	private final SimpleDateFormat formatRecent = new SimpleDateFormat("MMM dd HH:mm");
+	private final SimpleDateFormat formatOlder = new SimpleDateFormat("MMM dd yyyy");
 
-	final UnitParser up = UnitParser.getCapacitiesParser(2);
+	private final UnitParser up = UnitParser.getCapacitiesParser(2);
 
-	protected void printSingle(FileInfo fi, int width) {
+	private void printSingle(FileInfo fi, int width) {
 		StringBuilder info = new StringBuilder();
 		info.append(fi.isDirectory());
 		info.append(fi.getUnixPermissions("-"));
@@ -106,16 +116,6 @@ public class ULS extends Command {
 		}
 		info.append(" ").append(fi.getPath());
 		System.out.println(info.toString());
-	}
-
-	@Override
-	public String getArgumentDescription() {
-		return "<remote_directory>";
-	}
-
-	@Override
-	public String getSynopsis() {
-		return "Lists a remote directory.";
 	}
 
 }

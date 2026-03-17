@@ -8,15 +8,25 @@ import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
 import eu.unicore.uftp.standalone.util.UOptions;
 
+/**
+ * show server info
+ *
+ * @author schuller
+ */
 public class Info extends Command {
-	
+
 	boolean raw = false;
-	
+
 	boolean unicoreXStyle = false;
-	
+
 	@Override
 	public String getName() {
 		return "info";
+	}
+
+	@Override
+	public String getSynopsis(){
+		return "Gets info about the remote server";
 	}
 
 	@Override
@@ -28,7 +38,12 @@ public class Info extends Command {
 				.get());
 		return options;
 	}
-	
+
+	@Override
+	public String getArgumentDescription() {
+		return "<UFTP-Auth-URL>";
+	}
+
 	@Override
 	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
@@ -52,14 +67,5 @@ public class Info extends Command {
 			System.out.println(auth.parseInfo(j, uri));
 		}
 	}
-	
-	@Override
-	public String getArgumentDescription() {
-		return "<UFTP-Auth-URL>";
-	}
-	
-	public String getSynopsis(){
-		return "Gets info about the remote server";
-	}
-	
+
 }

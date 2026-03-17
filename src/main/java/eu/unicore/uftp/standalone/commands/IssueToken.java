@@ -11,9 +11,8 @@ import eu.unicore.uftp.standalone.authclient.AuthClient;
 import eu.unicore.uftp.standalone.util.UOptions;
 
 /**
- * ask the auth server to issue a JWT token for
- * later use
- * 
+ * Ask the auth server to issue an API authentication token
+ *
  * @author schuller
  */
 public class IssueToken extends Command {
@@ -29,6 +28,12 @@ public class IssueToken extends Command {
 	@Override
 	public String getName() {
 		return "issue-token";
+	}
+
+	@Override
+	public String getSynopsis() {
+		return "Asks the Authserver to issue an API authentication token. "+
+				"Lifetime and other properties can be configured.";
 	}
 
 	@Override
@@ -57,6 +62,11 @@ public class IssueToken extends Command {
 				.required(false)
 				.get());
 		return options;
+	}
+
+	@Override
+	public String getArgumentDescription() {
+		return "<Server-URL>";
 	}
 
 	@Override
@@ -94,16 +104,6 @@ public class IssueToken extends Command {
 		message("Issued by:    "+o.getString("iss"));
 		message("Valid for:    "+o.optString("aud", "<unlimited>"));
 		message("Renewable:    "+o.optString("renewable", "no"));
-	}
-
-	@Override
-	public String getArgumentDescription() {
-		return "<Server-URL>";
-	}
-	@Override
-	public String getSynopsis() {
-		return "Asks the Authserver to issue a JWT authentication token. "+
-				"Lifetime and other properties can be configured.";
 	}
 
 }

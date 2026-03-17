@@ -18,7 +18,7 @@ import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 
 /**
- * create, update, delete shares
+ * create, list, update, delete shares
  * 
  * @author schuller
  */
@@ -29,13 +29,18 @@ public class Share extends Command {
 	 */
 	public static String UFTP_SHARE_URL = "UFTP_SHARE_URL";
 
-	String url;
+	private String url;
 
-	boolean raw;
+	private boolean raw;
 
 	@Override
 	public String getName() {
 		return "share";
+	}
+
+	@Override
+	public String getSynopsis(){
+		return "Create, update and delete shares.";
 	}
 
 	@Override
@@ -87,6 +92,17 @@ public class Share extends Command {
 				.required(false)
 				.get());
 		return options;
+	}
+
+	@Override
+	public String getArgumentDescription() {
+		return "<path>"
+				+ " OR --list"
+				+ " OR --write --access <target-dn> <path>"
+				+ " OR --delete <path>"
+				+ " OR --delete --access <target-dn> <path>"
+				+ " OR --update ..."
+				;
 	}
 
 	@Override
@@ -215,19 +231,6 @@ public class Share extends Command {
 		}
 	}
 
-	@Override
-	public String getArgumentDescription() {
-		return "<path>"
-				+" OR --write --access <target-dn> <path>"
-				+" OR --delete <path>"
-				+" OR --delete --access <target-dn> <path>"
-				;
-	}
-
-	public String getSynopsis(){
-		return "Create, update and delete shares.";
-	}
-
 	protected BaseClient getClient(String url, ClientFacade client) throws Exception {
 		DefaultClientConfiguration sec = new DefaultClientConfiguration();
 		sec.setValidator(new BinaryCertChainValidator(true));
@@ -251,7 +254,6 @@ public class Share extends Command {
 		}
 		return o;
 	}
-
 
 	public enum AccessType {
 		NONE,

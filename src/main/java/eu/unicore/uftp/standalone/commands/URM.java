@@ -17,6 +17,21 @@ public class URM extends Command {
 	private boolean recurse = false;
 
 	@Override
+	public String getName() {
+		return "rm";
+	}
+
+	@Override
+	public String getArgumentDescription() {
+		return "<remote_file> ...";	
+	}
+
+	@Override
+	public String getSynopsis() {
+		return "Deletes remote files or directories.";
+	}
+
+	@Override
 	protected UOptions getOptions() {
 		UOptions options = super.getOptions();
 		options.addOption(Option.builder("q").longOpt("quiet")
@@ -29,17 +44,12 @@ public class URM extends Command {
 				.get());
 		return options;
 	}
-	
+
 	@Override
 	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		quiet = line.hasOption('q');
 		recurse = line.hasOption('r');
-	}
-	
-	@Override
-	public String getName() {
-		return "rm";
 	}
 
 	@Override
@@ -73,20 +83,10 @@ public class URM extends Command {
 		}
 		else sc.rm(file);
 	}
-		
-	@Override
-	public String getArgumentDescription() {
-		return "<remote_file> ...";	
-	}
-
-	@Override
-	public String getSynopsis() {
-		return "Deletes remote files or directories.";
-	}
 
 	private boolean always = false;
 
-	protected boolean confirm(String file){
+	private boolean confirm(String file){
 		LineReader r = null;
 		try {
 			r = LineReaderBuilder.builder().build();

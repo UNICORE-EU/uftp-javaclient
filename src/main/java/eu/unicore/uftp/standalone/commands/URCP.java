@@ -18,7 +18,7 @@ import eu.unicore.uftp.standalone.util.UOptions;
  */
 public class URCP extends DataTransferCommand {
 
-	protected String target;
+	private String target;
 
 	private String onetimePassword;
 	private String uftpdAddress;

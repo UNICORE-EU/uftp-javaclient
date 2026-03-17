@@ -40,7 +40,7 @@ public abstract class Command implements ICommand {
 	 * environment variable defining the UFTP user name
 	 */
 	public static String UFTP_USER = "UFTP_USER";
-	
+
 	protected String[] fileArgs;
 
 	protected CommandLine line;
@@ -234,19 +234,19 @@ public abstract class Command implements ICommand {
 		if(transferOptions!=null){
 			System.out.println();
 			formatter.setSyntaxPrefix("Transfer options:");
-			formatter.printHelp(""+_newline, "", transferOptions, "", false);
+			formatter.printHelp(_newline, "", transferOptions, "", false);
 		}
 		Options authOptions = options.getAuthenticationOptions();
 		if(authOptions!=null){
 			System.out.println();
 			formatter.setSyntaxPrefix("Authentication options:");
-			formatter.printHelp(""+_newline, "", authOptions, "", false);
+			formatter.printHelp(_newline, "", authOptions, "", false);
 		}
 		Options general=options.getGeneralOptions();
 		if(general!=null){
 			System.out.println();
 			formatter.setSyntaxPrefix("General options:");
-			formatter.printHelp(""+_newline, "", general, "", false);
+			formatter.printHelp(_newline, "", general, "", false);
 		}
 	}
 
@@ -286,7 +286,6 @@ public abstract class Command implements ICommand {
 		else{
 			return getUPAuthData();
 		}
-
 	}
 
 	protected IAuthCallback getUPAuthData(){
