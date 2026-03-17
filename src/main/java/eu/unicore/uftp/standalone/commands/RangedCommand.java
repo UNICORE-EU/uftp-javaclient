@@ -20,9 +20,10 @@ public abstract class RangedCommand extends Command {
 	protected UOptions getOptions() {
 		UOptions options = super.getOptions();
 		options.addOption(Option.builder("B").longOpt("bytes")
-				.desc("range")
+				.desc("Byte range")
 				.required(false)
 				.hasArg()
+				.argName("range")
 				.get(), UOptions.GRP_TRANSFER);
 		return options;
 	}
