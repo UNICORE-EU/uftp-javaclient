@@ -45,13 +45,20 @@ public class ClientFacade {
 		this.connectionManager = connectionInfoManager;
 	}
 
+	private String lastUFTPDHost;
+
 	public AuthResponse authenticate(String uri) throws Exception {
 		connectionManager.init(uri);
 		AuthResponse response = initSession(connectionManager.getAuthClient(this));
 		if(!response.success){
 			throw new AuthorizationFailureException("Failed to successfully authenticate: "+response.reason);
 		}
+		lastUFTPDHost = response.serverHost;
 		return response;
+	}
+
+	public String getLastUFTPDHost() {
+		return lastUFTPDHost;
 	}
 
 	private AuthResponse initSession(AuthClient authClient) throws Exception {

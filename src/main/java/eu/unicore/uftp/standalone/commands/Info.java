@@ -3,8 +3,10 @@ package eu.unicore.uftp.standalone.commands;
 import java.util.Map;
 
 import org.apache.commons.cli.Option;
+import org.apache.commons.io.output.NullOutputStream;
 import org.json.JSONObject;
 
+import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
@@ -24,6 +26,8 @@ public class Info extends Command {
 
 	boolean checkSession = true;
 
+	boolean checkPerformance = false;
+
 	@Override
 	public String getName() {
 		return "info";
@@ -31,7 +35,7 @@ public class Info extends Command {
 
 	@Override
 	public String getSynopsis(){
-		return "Gets info about the remote server";
+		return "Gets info about the remote server and runs some checks.";
 	}
 
 	@Override
@@ -43,6 +47,10 @@ public class Info extends Command {
 				.get());
 		options.addOption(Option.builder("N").longOpt("no-check-session")
 				.desc("Don't try to establish and check a UFTP session")
+				.required(false)
+				.get());
+		options.addOption(Option.builder("p").longOpt("performance-check")
+				.desc("Run a quick test of the single-thread performance")
 				.required(false)
 				.get());
 		return options;
@@ -57,7 +65,11 @@ public class Info extends Command {
 	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		raw = line.hasOption('R');
+		verbose("Raw info mode: {}", raw);
 		checkSession = !line.hasOption('N');
+		verbose("Checking UFTP connect and session creation: {}", checkSession);
+		checkPerformance = line.hasOption('p');
+		verbose("Running quick performance check: {}", checkPerformance);
 	}
 
 	@Override
@@ -78,18 +90,43 @@ public class Info extends Command {
 		}
 		if(checkSession && auth.isValidUser(j)) {
 			Map<String,String> servers = auth.getServers();
-			if(servers.size()>0) {
-				message("Checking UFTP connection(s)...");
+			if(servers.size()==0) {
+				message("No UFTP servers found.");
+				return;
 			}
 			for(String name: servers.keySet()) {
 				verbose("Checking UFTP connection to '{}' ...", name);
-				try (UFTPSessionClient sc = client.doConnect(servers.get(name)+":.")){
+				try (UFTPSessionClient sc = client.doConnect(servers.get(name)+":/")){
 					sc.stat(".");
-					message(" - UFTP connection to '{}': OK", name);
+					message("UFTPD connection to '{}' ({}): OK", name, client.getLastUFTPDHost());
+					if(checkPerformance) {
+						message("Testing single-stream performance, this can take a few seconds ..."
+								+ " (ctrl-c to interrupt)");
+						message(" --> {}B/s", runPerftest(sc));
+					}
 				}catch(Exception e) {
-					error("FAILED UFTP connection to '{}': {}", name, e);
+					error("FAILED UFTPD tests for '{}': {}", name, e);
 				}
-			}		
+			}
 		}
+	}
+
+	private String runPerftest(UFTPSessionClient sc) throws Exception {
+		long l = 10*1024*1024;
+		UnitParser sizeParser = UnitParser.getCapacitiesParser(0);
+		UnitParser rateParser = UnitParser.getCapacitiesParser(1);
+		long duration = 0;
+		double maxRate = 0;
+		do {
+			verbose(" - data size {}B ...", sizeParser.getHumanReadable(l));
+			long start = System.currentTimeMillis();
+			sc.get("/dev/zero", 0, l, NullOutputStream.INSTANCE);
+			duration = System.currentTimeMillis()-start;
+			double rate = 1000*(double)l/duration;
+			maxRate = Math.max(rate, maxRate);
+			verbose("   --> {}B/s", rateParser.getHumanReadable(rate));
+			l = l * (long)Math.pow(2, Math.max(1, (4000-duration)/1000));
+		}while(duration<5000);
+		return rateParser.getHumanReadable(maxRate);
 	}
 }

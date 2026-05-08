@@ -6,7 +6,7 @@ _uftp()
   cur=`_get_cword`
   prev="${COMP_WORDS[COMP_CWORD-1]}"
   commands="authenticate checksum cp info issue-token ls mkdir rcp rm share sync"
-  global_opts="--auth --client --group --help --identity --no-check-session --oidc-agent --oidc-server --password --user --verbose"
+  global_opts="--auth --client --group --help --identity --no-check-session --oidc-agent --oidc-server --password --performance-check --user --verbose"
 
 
   # parsing for uftp command word (2nd word in commandline.

@@ -104,7 +104,7 @@ public class AuthserverClient implements AuthClient {
 	public String parseInfo(JSONObject info, String url) throws JSONException {
 		StringBuilder sb = new StringBuilder();
 		String infoURL = makeInfoURL(url);
-		try(Formatter f = new Formatter(sb, null)){
+		try(Formatter f = new Formatter(sb)){
 			String crlf = System.getProperty("line.separator");
 			f.format("Client identity:    %s%s", getID(info), crlf);
 			f.format("Client auth method: %s%s", authData.getClass().getSimpleName(), crlf);
@@ -130,10 +130,8 @@ public class AuthserverClient implements AuthClient {
 					f.format("  Reservations:%s", crlf);
 					reservations.forEach( x -> f.format("    * %s%s", x, crlf));
 				}
-				try {
-					String serverStatus = getServerStatus(server);
-					f.format("  Server status:    %s%s", serverStatus, crlf);
-				}catch(JSONException e) {}
+				String serverStatus = getServerStatus(server);
+				f.format("  Server status:    %s", serverStatus, crlf);
 			}
 		}
 		return sb.toString();

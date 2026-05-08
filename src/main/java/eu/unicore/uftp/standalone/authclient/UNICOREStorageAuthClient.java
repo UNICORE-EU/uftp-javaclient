@@ -1,6 +1,8 @@
 package eu.unicore.uftp.standalone.authclient;
 
+import java.util.Collections;
 import java.util.Formatter;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
@@ -27,6 +29,8 @@ public class UNICOREStorageAuthClient implements AuthClient {
 	private final IAuthCallback authData;
 
 	private final ClientFacade client;
+
+	private JSONObject info;
 
 	public UNICOREStorageAuthClient(String authUrl, IAuthCallback authData, ClientFacade client) {
 		this.uri = authUrl;
@@ -57,22 +61,23 @@ public class UNICOREStorageAuthClient implements AuthClient {
 
 	@Override
 	public JSONObject getInfo() throws Exception {
-		return new BaseClient(makeInfoURL(uri), HttpClientFactory.getClientConfiguration(), authData)
-				.getJSON();
+		if(info==null) {
+			info = new BaseClient(makeInfoURL(uri), HttpClientFactory.getClientConfiguration(), authData)
+					.getJSON();
+		}
+		return info;
 	}
 
 	@Override
 	public String parseInfo(JSONObject info, String infoURL) throws JSONException {
 		StringBuilder sb = new StringBuilder();
-		try(Formatter f = new Formatter(sb, null)){
+		try(Formatter f = new Formatter(sb)){
 			String crlf = System.getProperty("line.separator");
 			f.format("Client identity:    %s%s", getID(info),crlf);
 			f.format("Client auth method: %s%s", authData.getClass().getSimpleName(),crlf);
 			f.format("Auth server type:   UNICORE/X v%s%s", getServerVersion(info), crlf);
 			f.format("Remote user info:   %s%s", getUserInfo(info), crlf);
-			try {
-				f.format("UFTP Server status: %s%s", getServerStatus(info), crlf);
-			}catch(JSONException e) {}
+			f.format("UFTPD server status: %s", getServerStatus(info));
 		}
 		return sb.toString();
 	}
@@ -150,7 +155,13 @@ public class UNICOREStorageAuthClient implements AuthClient {
 	public IAuthCallback getAuthData() {
 		return authData;
 	}
-	
+
+	@Override
+	public Map<String,String> getServers() throws Exception {
+		String name = getInfo().getJSONObject("server").optString("siteName", "UNICORE/X");
+		return Collections.singletonMap(name, uri);
+	}
+
 	private static final char[] chars = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 
 	static String generateSecret() {
