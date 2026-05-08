@@ -29,8 +29,8 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 	private volatile boolean _closed = false;
 	private int width;
 
-	private final UnitParser rateParser=UnitParser.getCapacitiesParser(1);
-	private final UnitParser sizeParser=UnitParser.getCapacitiesParser(0);
+	private final UnitParser rateParser = UnitParser.getCapacitiesParser(1);
+	private final UnitParser sizeParser = UnitParser.getCapacitiesParser(0);
 	
 	// data indexed per thread
 	private final int maxThreads;
@@ -51,7 +51,7 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 		this.have = new long[maxThreads];
 		this.rate = new double[maxThreads];
 		this.trackers = new TransferTracker[maxThreads];
-		this.terminal = TerminalBuilder.terminal();
+		this.terminal = TerminalBuilder.builder().graphemeCluster(false).build();
 		width = terminal.getWidth();
 		terminal.handle(Signal.WINCH, (sig)->{
 			// window changed

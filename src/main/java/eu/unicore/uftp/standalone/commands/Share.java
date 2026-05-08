@@ -219,7 +219,7 @@ public class Share extends Command {
 	}
 
 	private UnitParser timeParser = UnitParser.getTimeParser(0);
-	
+
 	protected void listShare(JSONObject s) throws Exception {
 		if(raw)System.out.println(s.toString(2));
 		else {

@@ -1,5 +1,6 @@
 package eu.unicore.uftp.standalone;
 
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,9 +21,10 @@ public class DispatcherTest {
 			c.printUsage();
 		}
 	}
-	
+
 	@Test
 	public void testVersionInfo() {
 		ClientDispatcher.printVersion();
 	}
+
 }

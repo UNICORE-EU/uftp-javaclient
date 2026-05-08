@@ -12,7 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +24,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 
-import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.client.FileInfo;
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
@@ -62,6 +63,10 @@ public class UCP extends DataTransferCommand {
 	private int retryCount = 0;
 
 	private final Queue<Pair<TransferTask,Future<Boolean>>> tasks = new ConcurrentLinkedQueue<>();
+
+	private boolean dryRun = false;
+
+	private Statistics stats = new Statistics();
 
 	@Override
 	public String getName() {
@@ -119,6 +124,10 @@ public class UCP extends DataTransferCommand {
 				.hasArg()
 				.argName("retryCount")
 				.get());
+		options.addOption(Option.builder("d").longOpt("dry-run")
+				.desc("Don't actually transfer anything, just collect some statistics")
+				.required(false)
+				.get());
 		return options;
 	}
 
@@ -133,6 +142,11 @@ public class UCP extends DataTransferCommand {
 			if(!target.endsWith(":") && !target.endsWith("/")){
 				target = target + "/";
 			}
+		}
+		dryRun = line.hasOption('d');
+		if(dryRun) {
+			verbose = true;
+			verbose("Dry-run mode enabled, will not transfer anything.");
 		}
 		recurse = line.hasOption('r');
 		preserve = line.hasOption('p');
@@ -149,13 +163,14 @@ public class UCP extends DataTransferCommand {
 			}
 			if (line.hasOption('T')) {
 				String thresh = line.getOptionValue('T');
-				splitThreshold = (long)UnitParser.getCapacitiesParser(2).getDoubleValue(thresh);
+				splitThreshold = (long)unitParser.getDoubleValue(thresh);
 			}
 			if(!archiveMode){
 				verbose("Using up to <{}> client threads.", numClients);
 				if(splitThreshold>0) {
-					verbose("Splitting files larger than {}",
-							UnitParser.getCapacitiesParser(0).getHumanReadable(splitThreshold));
+					verbose("Splitting files larger than {} bytes ({})", splitThreshold,
+							unitParser.getHumanReadable(splitThreshold));
+					
 				}
 			}
 			if(doResume && line.hasOption('T')) {
@@ -182,6 +197,7 @@ public class UCP extends DataTransferCommand {
 			}
 			verbose("Will re-try failed transfer tasks <{}> times.", retryCount);
 		}
+		
 	}
 
 	@Override
@@ -205,11 +221,23 @@ public class UCP extends DataTransferCommand {
 				}
 			}
 		}
+		if(dryRun) {
+			verbose("\nThis command would have resulted in the following:");
+			verbose("Number of source files:        {}", stats.numberOfSourceFiles);
+			verbose(" - distinct source file paths: {}", stats.sourceFileNames.size());
+			verbose(" - distinct target file paths: {}", stats.targetFileNames.size());
+			if(ResumeMode.APPEND==resume) {
+			    verbose(" - transfers to be resumed:     {}", stats.numberOfResumedFiles);
+			    verbose(" - transfers to be skipped:     {}", stats.numberOfExistingFiles);	
+			}
+			verbose("Total bytes to transfer:       {} ({}B)", stats.totalBytes,
+					unitParser.getHumanReadable(stats.totalBytes));
+			verbose("Total Number of data chunks :  {}", stats.totalChunks);
+		}
 		if(totalSize>0) {
 			double rate = 1000* totalSize / (System.currentTimeMillis() - start);
-			UnitParser up = UnitParser.getCapacitiesParser(1);
-			verbose("\nTotal bytes transferred: {}B", up.getHumanReadable(totalSize));
-			verbose("Net transfer rate:       {}B/sec",up.getHumanReadable(rate));
+			verbose("\nTotal bytes transferred:     {}B",  unitParser.getHumanReadable(totalSize));
+			verbose("Net transfer rate:           {}B/sec", unitParser.getHumanReadable(rate));
 		}
 	}
 
@@ -253,10 +281,14 @@ public class UCP extends DataTransferCommand {
 	private void executeSingleFileUpload(String local, String remotePath, ClientPool pool, UFTPSessionClient sc, boolean isDevFile)
 			throws FileNotFoundException, URISyntaxException, IOException {
 		String dest = getFullRemoteDestination(local, remotePath);
+		stats.numberOfSourceFiles+=1;
+		stats.sourceFileNames.add(local);
+		stats.targetFileNames.add(dest);
 		if(archiveMode) {
 			sc.setType(UFTPSessionClient.TYPE_ARCHIVE);
 		}
 		if("-".equals(local)){
+			if(dryRun)return;
 			try(InputStream is = System.in){
 				is.skip(getOffset());
 				sc.put(dest, getLength(), is);
@@ -286,9 +318,11 @@ public class UCP extends DataTransferCommand {
 				if(targetExists) {
 					if(numBytes>0){
 						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", dest, offset, numBytes);
+						stats.numberOfResumedFiles++;
 					}
 					else{
 						verbose("Nothing to do for <{}>", dest);
+						stats.numberOfExistingFiles++;
 						return;
 					}
 				}
@@ -304,6 +338,9 @@ public class UCP extends DataTransferCommand {
 		long last = start+numBytes-1;
 		verbose("Uploading: '{}' --> '{}', start={} length={} numChunks={} chunkSize={}",
 				local.getPath(), remotePath, start, numBytes, numChunks, chunkSize);
+		stats.totalChunks += numChunks;
+		stats.totalBytes += numBytes;
+		if(dryRun)return;
 		int width = String.valueOf(numChunks).length();
 		String localFileID = local.getPath();
 		String shortID = localFileID+"->"+remotePath;
@@ -377,8 +414,12 @@ public class UCP extends DataTransferCommand {
 	private void executeSingleFileDownload(String remotePath, String local, ClientPool pool, UFTPSessionClient sc, boolean isDevFile)
 			throws Exception {
 		String dest = getFullLocalDestination(remotePath, local);
+		stats.numberOfSourceFiles+=1;
+		stats.sourceFileNames.add(remotePath);
+		stats.targetFileNames.add(dest);
 		File file = new File(dest);
 		if("-".equals(local)){
+			if(dryRun)return;
 			sc.get(remotePath, getOffset(), getLength(), System.out);
 			sc.resetDataConnections();
 		}else{
@@ -402,14 +443,16 @@ public class UCP extends DataTransferCommand {
 					numBytes = numBytes - offset;
 					if(numBytes>0){
 						verbose("<{}>: resuming transfer, have <{}> bytes, remaining <{}>", remotePath, offset, numBytes);
+						stats.numberOfResumedFiles++;
 					}
 					else{
 						verbose("Nothing to do for <{}>", remotePath);
+						stats.numberOfExistingFiles++;
 						return;
 					}
 				}
 			}
-			if(ResumeMode.NONE.equals(resume) && file.exists()) {
+			if(!dryRun && ResumeMode.NONE.equals(resume) && file.exists()) {
 				// truncate now to make sure we don't overwrite only part of the file
 				try (RandomAccessFile raf = new RandomAccessFile(file, "rw")){
 					raf.setLength(0);
@@ -426,6 +469,9 @@ public class UCP extends DataTransferCommand {
 		long chunkSize = numBytes / numChunks;
 		verbose("Downloading: '{}' --> '{}', start={} length={} numChunks={} chunkSize={}",
 				remotePath, local, start, numBytes, numChunks, chunkSize);
+		stats.totalChunks += numChunks;
+		stats.totalBytes += numBytes;
+		if(dryRun)return;
 		int width = String.valueOf(numChunks).length();
 		String shortID = remotePath+"->"+local;
 		TransferTracker ti = new TransferTracker(local, numBytes,
@@ -514,15 +560,20 @@ public class UCP extends DataTransferCommand {
 					FilenameUtils.concat(FilenameUtils.getFullPath(destination), destName);
 	}
 
-	// we don't want chunks smaller than half of the split threshold
-	// otherwise create a few more chunks than we have threads to try 
-	// and avoid idle threads
 	int computeNumChunks(long dataSize) {
-		if(splitThreshold<0 || dataSize<splitThreshold || numClients<2){
+		if(splitThreshold<=0 || dataSize<splitThreshold || numClients<2){
 			return 1;
 		}
-		long numChunks = 2 * dataSize / splitThreshold;
-		return (int)Math.min(numChunks, (long)(1.25*numClients));
+		return (int)Math.ceil(1.0f*dataSize / splitThreshold);
 	}
 
+	public static class Statistics {
+		long totalBytes = 0;
+		long totalChunks = 0;
+		long numberOfSourceFiles = 0;
+		long numberOfExistingFiles = 0;
+		long numberOfResumedFiles = 0;
+		final Set<String> targetFileNames = new HashSet<>();
+		final Set<String> sourceFileNames = new HashSet<>();
+	}
 }

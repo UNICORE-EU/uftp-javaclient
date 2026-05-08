@@ -2,7 +2,6 @@ package eu.unicore.uftp.standalone.commands;
 
 import org.apache.commons.cli.Option;
 
-import eu.unicore.services.restclient.utils.UnitParser;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UOptions;
@@ -56,9 +55,8 @@ public abstract class DataTransferCommand extends RangedCommand {
 			streams = Integer.parseInt(line.getOptionValue('n'));
 		}
 		if (line.hasOption('K')) {
-			UnitParser up = UnitParser.getCapacitiesParser(0);
-			bandwithLimit = (long)up.getDoubleValue(line.getOptionValue('K'));
-			verbose("LIMITING bandwidth per thread to {}B/s", up.getHumanReadable(bandwithLimit));
+			bandwithLimit = (long)unitParser.getDoubleValue(line.getOptionValue('K'));
+			verbose("LIMITING bandwidth per thread to {}B/s", unitParser.getHumanReadable(bandwithLimit));
 		}
 		if (line.hasOption('E')) {
 			encrypt = true;

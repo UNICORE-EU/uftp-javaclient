@@ -95,7 +95,7 @@ public class ULS extends Command {
 
 	private void printSingle(FileInfo fi, int width) {
 		StringBuilder info = new StringBuilder();
-		info.append(fi.isDirectory());
+		info.append(fi.isDirectory()? "d": "-");
 		info.append(fi.getUnixPermissions("-"));
 		if(humanReadable) {
 			info.append(String.format(" %10s ", up.getHumanReadable(fi.getSize())));	

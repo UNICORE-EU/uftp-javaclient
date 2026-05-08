@@ -8,7 +8,6 @@ import org.apache.logging.log4j.message.ParameterizedMessage;
 
 import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.dpc.AuthorizationFailureException;
-import eu.unicore.uftp.dpc.Reply;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.dpc.Utils.EncryptionAlgorithm;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
@@ -30,6 +29,7 @@ public class ClientFacade {
 	private boolean compress = false;
 
 	private int encryptionKeyLength = -1;
+
 	private EncryptionAlgorithm encryptionAlgorithm = null;
 
 	private boolean resume = false;
@@ -90,12 +90,13 @@ public class ClientFacade {
 					String t[]=p.split("=",2);
 					String prop = t[0];
 					String value = t[1];
-					Reply reply = sc.runCommand("OPTS "+prop+" "+value);
-					if(reply.isOK()) {
-						verbose("Set option: "+prop+"="+value);
-					}else {
-						verbose("ERROR: "+reply.getStatusLine());
+					if("CLIENT_BUFFER_SIZE".equals(prop)) {
+						sc.setBuffersize(Integer.valueOf(value));
 					}
+					else {
+						sc.setSessionOption(prop, value);
+					}
+					verbose("Set option: "+prop+"="+value);
 				}
 			}
 			catch(Exception ex) {
@@ -103,7 +104,7 @@ public class ClientFacade {
 			}
 		}
 	}
-	
+
 	/**
 	 * check if we need to re-authenticate - will return a fresh session client if required
 	 *

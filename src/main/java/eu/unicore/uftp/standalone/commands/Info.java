@@ -1,8 +1,11 @@
 package eu.unicore.uftp.standalone.commands;
 
+import java.util.Map;
+
 import org.apache.commons.cli.Option;
 import org.json.JSONObject;
 
+import eu.unicore.uftp.client.UFTPSessionClient;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.AuthClient;
@@ -18,6 +21,8 @@ public class Info extends Command {
 	boolean raw = false;
 
 	boolean unicoreXStyle = false;
+
+	boolean checkSession = true;
 
 	@Override
 	public String getName() {
@@ -36,6 +41,10 @@ public class Info extends Command {
 				.desc("Print the JSON response from server")
 				.required(false)
 				.get());
+		options.addOption(Option.builder("N").longOpt("no-check-session")
+				.desc("Don't try to establish and check a UFTP session")
+				.required(false)
+				.get());
 		return options;
 	}
 
@@ -48,6 +57,7 @@ public class Info extends Command {
 	public void parseOptions(String[] args) throws Exception {
 		super.parseOptions(args);
 		raw = line.hasOption('R');
+		checkSession = !line.hasOption('N');
 	}
 
 	@Override
@@ -61,11 +71,25 @@ public class Info extends Command {
 		AuthClient auth = mgr.getAuthClient(client);
 		JSONObject j = auth.getInfo();
 		if(raw) {
-			System.out.println(j.toString(2));
+			message(j.toString(2));
 		}
 		else {
-			System.out.println(auth.parseInfo(j, uri));
+			message(auth.parseInfo(j, uri));
+		}
+		if(checkSession && auth.isValidUser(j)) {
+			Map<String,String> servers = auth.getServers();
+			if(servers.size()>0) {
+				message("Checking UFTP connection(s)...");
+			}
+			for(String name: servers.keySet()) {
+				verbose("Checking UFTP connection to '{}' ...", name);
+				try (UFTPSessionClient sc = client.doConnect(servers.get(name)+":.")){
+					sc.stat(".");
+					message(" - UFTP connection to '{}': OK", name);
+				}catch(Exception e) {
+					error("FAILED UFTP connection to '{}': {}", name, e);
+				}
+			}		
 		}
 	}
-
 }

@@ -2,7 +2,9 @@ package eu.unicore.uftp.standalone.authclient;
 
 import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
@@ -37,6 +39,8 @@ public class AuthserverClient implements AuthClient {
 
 	private boolean persistent = false;
 
+	private JSONObject info = null; 
+	 
 	public AuthserverClient(String authUrl, IAuthCallback authData, ClientFacade client) {
 		this.uri = authUrl;
 		this.authData = authData;
@@ -71,13 +75,16 @@ public class AuthserverClient implements AuthClient {
 
 	@Override
 	public JSONObject getInfo() throws Exception {
-		String infoURL = makeInfoURL(uri);
-		BaseClient bc = new BaseClient(infoURL,
-				HttpClientFactory.getClientConfiguration(),
-				authData);
-		return bc.getJSON();
+		if(info==null) {
+			String infoURL = makeInfoURL(uri);
+			BaseClient bc = new BaseClient(infoURL,
+					HttpClientFactory.getClientConfiguration(),
+					authData);
+			info = bc.getJSON();
+		}
+		return info;
 	}
-	
+
 	@Override
 	public String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception {
 		String tokenURL = makeIssueTokenURL(uri);
@@ -194,4 +201,15 @@ public class AuthserverClient implements AuthClient {
 		return authData;
 	}
 
+	@Override
+	public Map<String,String> getServers() throws Exception {
+		getInfo();
+		String infoURL = makeInfoURL(uri);
+		Map<String,String> servers = new HashMap<>();
+		for(String key: info.keySet()) {
+			if("client".equals(key) || "server".equals(key))continue;
+			servers.put(key, infoURL+"/"+key);
+		}
+		return servers;
+	}
 }

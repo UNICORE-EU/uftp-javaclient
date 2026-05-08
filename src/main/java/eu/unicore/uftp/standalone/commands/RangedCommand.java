@@ -16,6 +16,8 @@ public abstract class RangedCommand extends Command {
 
 	protected RangeMode rangeMode = RangeMode.READ;
 
+	protected UnitParser unitParser = UnitParser.getCapacitiesParser(2);
+
 	@Override
 	protected UOptions getOptions() {
 		UOptions options = super.getOptions();
@@ -35,11 +37,11 @@ public abstract class RangedCommand extends Command {
 				String start = tokens[0];
 				String end = tokens[1];
 				if(start.length()>0){
-					startByte = (long)(UnitParser.getCapacitiesParser(0).getDoubleValue(start));
+					startByte = (long)(unitParser.getDoubleValue(start));
 					endByte = Long.MAX_VALUE;
 				}
 				if(end.length()>0){
-					endByte = (long)(UnitParser.getCapacitiesParser(0).getDoubleValue(end));
+					endByte = (long)(unitParser.getDoubleValue(end));
 					if(startByte==null){
 						startByte = Long.valueOf(0l);
 					}
@@ -54,7 +56,7 @@ public abstract class RangedCommand extends Command {
 			}
 			else {
 				String end=tokens[0];
-				endByte=(long)(UnitParser.getCapacitiesParser(0).getDoubleValue(end));
+				endByte=(long)(unitParser.getDoubleValue(end));
 				startByte=Long.valueOf(0l);
 			}
 		}catch(Exception e){
