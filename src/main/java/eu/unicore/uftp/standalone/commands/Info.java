@@ -100,8 +100,12 @@ public class Info extends Command {
 					sc.stat(".");
 					message("UFTPD connection to '{}' ({}): OK", name, client.getLastUFTPDHost());
 					if(checkPerformance) {
-						message("Testing single-stream performance, this can take a few seconds ..."
-								+ " (ctrl-c to interrupt)");
+						try {
+							sc.stat("/dev/zero");
+						}catch(Exception ex) {
+							message("Cannot test performance - remote storage does not have '/dev/zero'");
+							return;
+						}
 						message(" --> {}B/s", runPerftest(sc));
 					}
 				}catch(Exception e) {
@@ -112,19 +116,21 @@ public class Info extends Command {
 	}
 
 	private String runPerftest(UFTPSessionClient sc) throws Exception {
+		message("Testing single-stream performance, this can take a few seconds ..."
+				+ " (ctrl-c to interrupt)");
 		long l = 10*1024*1024;
 		UnitParser sizeParser = UnitParser.getCapacitiesParser(0);
 		UnitParser rateParser = UnitParser.getCapacitiesParser(1);
 		long duration = 0;
 		double maxRate = 0;
 		do {
-			verbose(" - data size {}B ...", sizeParser.getHumanReadable(l));
 			long start = System.currentTimeMillis();
 			sc.get("/dev/zero", 0, l, NullOutputStream.INSTANCE);
 			duration = System.currentTimeMillis()-start;
 			double rate = 1000*(double)l/duration;
 			maxRate = Math.max(rate, maxRate);
-			verbose("   --> {}B/s", rateParser.getHumanReadable(rate));
+			verbose("   ... data size {}B --> {}B/s", sizeParser.getHumanReadable(l),
+					rateParser.getHumanReadable(rate));
 			l = l * (long)Math.pow(2, Math.max(1, (4000-duration)/1000));
 		}while(duration<5000);
 		return rateParser.getHumanReadable(maxRate);

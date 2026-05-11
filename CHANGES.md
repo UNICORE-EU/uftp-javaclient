@@ -9,7 +9,7 @@ https://github.com/UNICORE-EU/uftp-javaclient/issues
 
    This release requires Java 17 or later!
 
-UFTP Client 2.4.0 (released MMM dd, 2026)
+UFTP Client 2.4.0 (released May 11, 2026)
 -----------------------------------------
  - new feature: "cp --dry-run" will only check what would be transferred
  - new feature: "info" will also check if an actual UFTP connection
