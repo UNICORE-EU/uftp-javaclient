@@ -26,13 +26,13 @@ public class TestInfo extends BaseServiceTest {
     	String[] args = new String[]{ "-h" };
     	ClientDispatcher._main(args);
     	args = new String[]{ "--version" };
-    	ClientDispatcher._main(args);
+    	assertEquals(0, ClientDispatcher._main(args));
     }
 
     @Test
     public void testCmd() throws Exception {
     	String[] args = new String[]{ new Info().getName(), "-h" };
-    	ClientDispatcher._main(args);
+    	assertEquals(0, ClientDispatcher._main(args));
     }
 
     @Test
@@ -51,6 +51,7 @@ public class TestInfo extends BaseServiceTest {
 
     @Test
     public void testKey() throws Exception {
+    	System.setProperty("UNICORE_NO_SSH_AGENT", "true");
     	String[] args = new String[]{ new Info().getName(),
     			"-u", "demouser",
     			"--identity", "src/test/resources/test_id",

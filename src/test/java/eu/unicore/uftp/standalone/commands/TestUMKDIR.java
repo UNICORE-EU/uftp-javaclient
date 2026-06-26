@@ -1,5 +1,7 @@
 package eu.unicore.uftp.standalone.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
@@ -29,16 +31,16 @@ public class TestUMKDIR extends BaseServiceTest {
     @Test
     public void testCmd() throws Exception {
     	String[] args = new String[]{ new UMKDIR().getName(), "-h" };
-    	ClientDispatcher._main(args);
+    	assertEquals(0, ClientDispatcher._main(args));
     }
 
     @Test
     public void test1() throws Exception {
     	String file = new File(testsDir, "newdir1").getAbsolutePath();
     	String[] args = new String[]{ new UMKDIR().getName(), 
-    			"mkdir", "-u", "demouser:test123",
+    			"-u", "demouser:test123",
     			getAuthURL(file)};
-    	ClientDispatcher._main(args);
+    	assertEquals(0, ClientDispatcher._main(args));
     }
 
 }

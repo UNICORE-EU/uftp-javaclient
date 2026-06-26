@@ -40,11 +40,12 @@ public class UNICOREStorageAuthClient implements AuthClient {
 
 	@Override
 	public AuthResponse connect(String path) throws Exception {
-		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
 		byte[] key = client.createEncryptionKey();
 		String base64Key = key!=null? Utils.encodeBase64(key) : null;
 		JSONObject request = createRequestObject(path, base64Key, client.isCompress(), client.getClientIP(), true);
-		try(ClassicHttpResponse res = bc.post(request)){
+		try(var bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
+				ClassicHttpResponse res = bc.post(request))
+		{
 			JSONObject reply = bc.asJSON(res);
 			AuthResponse response = new AuthResponse();
 			response.reason = "OK";
@@ -62,8 +63,9 @@ public class UNICOREStorageAuthClient implements AuthClient {
 	@Override
 	public JSONObject getInfo() throws Exception {
 		if(info==null) {
-			info = new BaseClient(makeInfoURL(uri), HttpClientFactory.getClientConfiguration(), authData)
-					.getJSON();
+			try(var bc = new BaseClient(makeInfoURL(uri), HttpClientFactory.getClientConfiguration(), authData)){
+				info = bc.getJSON();
+			}
 		}
 		return info;
 	}
@@ -88,11 +90,11 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		if(lifetime>0)b.addParameter("lifetime", String.valueOf(lifetime));
 		if(renewable)b.addParameter("renewable", "true");
 		if(limited)b.addParameter("limited", "true");
-		BaseClient bc = new BaseClient(b.build().toString(),
-				HttpClientFactory.getClientConfiguration(),
-				authData);
-		try(ClassicHttpResponse res = bc.get(ContentType.WILDCARD)){
-			return EntityUtils.toString(res.getEntity());
+		
+		try(var bc = new BaseClient(b.build().toString(), HttpClientFactory.getClientConfiguration(), authData);
+			var response = bc.get(ContentType.WILDCARD))
+		{
+			return EntityUtils.toString(response.getEntity());
 		}
 	}
 

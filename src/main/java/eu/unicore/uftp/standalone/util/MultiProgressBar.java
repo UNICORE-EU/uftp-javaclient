@@ -52,11 +52,11 @@ public class MultiProgressBar implements UFTPProgressListener2, Closeable {
 		this.rate = new double[maxThreads];
 		this.trackers = new TransferTracker[maxThreads];
 		this.terminal = TerminalBuilder.builder().graphemeCluster(false).build();
-		width = terminal.getWidth();
+		width = terminal.getSize().getColumns();
 		terminal.handle(Signal.WINCH, (sig)->{
 			// window changed
 			synchronized (MultiProgressBar.this) {
-				width = terminal.getWidth();
+				width = terminal.getSize().getColumns();
 			}
 		});
 	}

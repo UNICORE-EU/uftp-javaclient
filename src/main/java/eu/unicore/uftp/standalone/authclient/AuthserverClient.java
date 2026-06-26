@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.apache.hc.core5.http.ContentType;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.apache.hc.core5.net.URIBuilder;
@@ -62,8 +61,9 @@ public class AuthserverClient implements AuthClient {
 				client.getStreams(), base64Key, encryptionAlgorithm, client.isCompress(),
 				client.getGroup(), client.getClientIP(), persistent);
 		JSONObject request = new JSONObject(gson.toJson(authRequest));
-		BaseClient bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
-		try(ClassicHttpResponse res = bc.post(request)){
+		try(var bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
+			var res = bc.post(request))
+		{
 			AuthResponse response = gson.fromJson(EntityUtils.toString(res.getEntity()), AuthResponse.class);
 			if(key!=null) {
 				response.encryptionKey = key;
@@ -77,10 +77,10 @@ public class AuthserverClient implements AuthClient {
 	public JSONObject getInfo() throws Exception {
 		if(info==null) {
 			String infoURL = makeInfoURL(uri);
-			BaseClient bc = new BaseClient(infoURL,
-					HttpClientFactory.getClientConfiguration(),
-					authData);
-			info = bc.getJSON();
+			try(var bc = new BaseClient(infoURL, HttpClientFactory.getClientConfiguration(), authData))
+			{
+				info = bc.getJSON();
+			}
 		}
 		return info;
 	}
@@ -92,10 +92,9 @@ public class AuthserverClient implements AuthClient {
 		if(lifetime>0)b.addParameter("lifetime", String.valueOf(lifetime));
 		if(renewable)b.addParameter("renewable", "true");
 		if(limited)b.addParameter("limited", "true");
-		BaseClient bc = new BaseClient(b.build().toString(),
-				HttpClientFactory.getClientConfiguration(),
-				authData);
-		try(ClassicHttpResponse res = bc.get(ContentType.WILDCARD)){
+		try(var bc = new BaseClient(b.build().toString(), HttpClientFactory.getClientConfiguration(), authData);
+		    var res = bc.get(ContentType.WILDCARD))
+		{
 			return EntityUtils.toString(res.getEntity());
 		}
 	}

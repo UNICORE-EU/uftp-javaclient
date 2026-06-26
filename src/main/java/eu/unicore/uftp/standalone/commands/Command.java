@@ -14,16 +14,19 @@ import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.hc.core5.http.HttpMessage;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
+import eu.emi.security.authn.x509.helpers.PasswordSupplier;
 import eu.unicore.services.restclient.IAuthCallback;
 import eu.unicore.services.restclient.UsernamePassword;
+import eu.unicore.services.restclient.sshkey.SSHAgent;
+import eu.unicore.services.restclient.sshkey.SSHAgentKeyAuthN;
+import eu.unicore.services.restclient.sshkey.SSHKeyAuthN;
+import eu.unicore.services.restclient.utils.UserLogger;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.oidc.OIDCAgent;
 import eu.unicore.uftp.standalone.oidc.OIDCServer;
-import eu.unicore.uftp.standalone.ssh.SSHAgent;
-import eu.unicore.uftp.standalone.ssh.SshKeyHandler;
 import eu.unicore.uftp.standalone.util.Anonymous;
 import eu.unicore.uftp.standalone.util.ConsoleUtils;
 import eu.unicore.uftp.standalone.util.UOptions;
@@ -34,7 +37,7 @@ import eu.unicore.util.Log;
  * 
  * @author schuller
  */
-public abstract class Command implements ICommand {
+public abstract class Command implements ICommand, UserLogger {
 
 	/**
 	 * environment variable defining the UFTP user name
@@ -206,7 +209,7 @@ public abstract class Command implements ICommand {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * print help
 	 */
@@ -268,7 +271,7 @@ public abstract class Command implements ICommand {
 		if(enableSSH){
 			return getSSHAuthData();
 		}
-		
+
 		if(authheader!=null){
 			return new IAuthCallback() {
 				@Override
@@ -296,12 +299,12 @@ public abstract class Command implements ICommand {
 		File keyFile = null;
 		boolean haveAgent = SSHAgent.isAgentAvailable();
 		int numKeys = 0;
-		
+
 		File[] dirs = new File[] {
-				 new File(System.getProperty("user.home"),".uftp"),
-				 new File(System.getProperty("user.home"),".ssh")
+				new File(System.getProperty("user.home"),".uftp"),
+				new File(System.getProperty("user.home"),".ssh")
 		};
-		
+
 		if(sshIdentity==null){
 			FilenameFilter ff = new FilenameFilter() {
 				@Override
@@ -341,11 +344,37 @@ public abstract class Command implements ICommand {
 		if(keyFile!=null){
 			verbose("Using SSH key <{}>", keyFile.getAbsolutePath());
 		}
-		SshKeyHandler ssh = new SshKeyHandler(keyFile, username, verbose);
-		if(haveAgent && sshIdentity!=null) {
-			ssh.selectIdentity();
+
+		IAuthCallback ssh = null;
+		if(haveAgent) {
+			SSHAgent agent = new SSHAgent();
+			if(sshIdentity!=null) {
+				agent.selectIdentity(keyFile.getAbsolutePath());
+			}
+			ssh = new SSHAgentKeyAuthN(username, null);
 		}
-		return ssh.getAuthData();
+		else {
+			final File kf = keyFile;
+			final PasswordSupplier pf = new PasswordSupplier() {
+				private char[] _p;
+				@Override
+				public char[] getPassword() {
+					if(_p==null) {
+						String pwd = Utils.getProperty("UFTP_PASSWORD", null);
+						if(pwd!=null) {
+							_p = pwd.toCharArray();
+						}
+					}
+					if(_p==null) {
+						_p = ConsoleUtils.readPassword("Enter passphrase for '"+kf.getAbsolutePath()+"': ").toCharArray();
+					}
+					return _p;
+				}
+			};
+			ssh  = new SSHKeyAuthN(username, keyFile, pf);
+		}
+		ssh.setLogger(this);
+		return ssh;
 	}
 
 	public void verbose(String msg, Object ... params) {
@@ -363,4 +392,5 @@ public abstract class Command implements ICommand {
 	private String format(String msg, Object ... params) {
 		return new ParameterizedMessage(msg, params).getFormattedMessage();
 	}
+
 }

@@ -3,9 +3,6 @@ package eu.unicore.uftp.standalone.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.File;
 
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.utils.Base64;
@@ -14,14 +11,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import eu.unicore.services.restclient.UsernamePassword;
-import eu.unicore.services.restclient.sshkey.SSHKey;
 import eu.unicore.uftp.standalone.BaseServiceTest;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.oidc.OIDCAgent;
 import eu.unicore.uftp.standalone.oidc.OIDCAgentProxy;
-import eu.unicore.uftp.standalone.ssh.SshKeyHandler;
 
 public class TestAuth extends BaseServiceTest {
 
@@ -75,19 +70,6 @@ public class TestAuth extends BaseServiceTest {
 		assertThrows(IllegalArgumentException.class, ()->{
 			ClientDispatcher._main(args2);
 		});
-	}
-
-	@Test
-	public void testSSHKeyJWT() throws Exception {
-		var sh = new SshKeyHandler(new File("src/test/resources/test_id"), "demouser", true);
-		System.setProperty("UFTP_NO_AGENT", "true");
-		var auth = sh.getAuthData();
-		System.out.println(auth);
-		assertTrue(auth instanceof SSHKey);
-		var m = new HttpGet("https://test");
-		auth.addAuthenticationHeaders(m);
-		var h = m.getHeader("Authorization");
-		assertNotNull(h);
 	}
 
 	@Test

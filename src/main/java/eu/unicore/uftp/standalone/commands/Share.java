@@ -3,7 +3,6 @@ package eu.unicore.uftp.standalone.commands;
 import java.io.File;
 
 import org.apache.commons.cli.Option;
-import org.apache.hc.core5.http.ClassicHttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -117,8 +116,7 @@ public class Share extends Command {
 			return;
 		}
 		else if(line.hasOption("U")) {
-			String id = line.getOptionValue("U");
-			url+="/"+id;
+			url+= "/" + line.getOptionValue("U");
 			update(client);
 		}
 		else {
@@ -128,9 +126,12 @@ public class Share extends Command {
 
 	
 	public void listShares(ClientFacade client) throws Exception {
-		BaseClient bc = getClient(url, client);
-		JSONObject shares = bc.getJSON();
-		_lastList = shares;
+		JSONObject shares = null;
+		try(var bc = getClient(url, client))
+		{
+			shares = bc.getJSON();
+			_lastList = shares;
+		}
 		if(raw) {
 			System.out.println(shares.toString(2));
 		}
@@ -156,21 +157,23 @@ public class Share extends Command {
 			throw new IllegalArgumentException("Missing argument: <path>");
 		}
 		JSONObject req = createRequest();
-		BaseClient bc = getClient(url, client);
-		String location = bc.create(req);
-		boolean delete = line.hasOption("d");
-		if(!delete && location!=null){
-			bc.setURL(location);
-			showNewShareInfo(bc.getJSON());
+		try(var bc = getClient(url, client)){
+			String location = bc.create(req);
+			boolean delete = line.hasOption("d");
+			if(!delete && location!=null){
+				bc.setURL(location);
+				showNewShareInfo(bc.getJSON());
+			}
 		}
 	}
 
 	public void update(ClientFacade client) throws Exception {
 		JSONObject req = createRequest();
-		BaseClient bc = getClient(url, client);
 		boolean delete = line.hasOption("d");
-		try(ClassicHttpResponse r = bc.put(req)){
-			if(!delete){
+		try(var bc = getClient(url, client))
+		{
+			bc.putQuietly(req);
+			if(!delete) {
 				showNewShareInfo(bc.getJSON());
 			}
 		}
