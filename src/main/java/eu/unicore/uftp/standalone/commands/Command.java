@@ -346,14 +346,16 @@ public abstract class Command implements ICommand, UserLogger {
 		}
 
 		IAuthCallback ssh = null;
-		if(haveAgent) {
+		if(haveAgent) try {
 			SSHAgent agent = new SSHAgent();
 			if(sshIdentity!=null) {
 				agent.selectIdentity(keyFile.getAbsolutePath());
 			}
-			ssh = new SSHAgentKeyAuthN(username, null);
+			ssh = new SSHAgentKeyAuthN(username, agent);
+		}catch(Exception ex) {
+			verbose("Could not setup SSH agent: {}", Log.getDetailMessage(ex));
 		}
-		else {
+		if(ssh==null) {
 			final File kf = keyFile;
 			final PasswordSupplier pf = new PasswordSupplier() {
 				private char[] _p;
