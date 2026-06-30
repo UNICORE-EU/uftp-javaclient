@@ -40,9 +40,7 @@ public class Auth extends DataTransferCommand {
 		String uri = fileArgs[0];
 		mgr.init(uri);
 		AuthClient auth = mgr.getAuthClient(client);
-		if(line.hasOption('p')){
-			auth.setPersistentSessions(true);
-		}
+		auth.setPersistentSessions(line.hasOption('p'));
 		AuthResponse res = auth.connect(mgr.getBasedir());
 		if(!res.success){
 			System.out.println("Error: "+res.reason);

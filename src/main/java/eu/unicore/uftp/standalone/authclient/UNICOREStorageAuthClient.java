@@ -32,6 +32,8 @@ public class UNICOREStorageAuthClient implements AuthClient {
 
 	private JSONObject info;
 
+	private boolean persistent = false;
+
 	public UNICOREStorageAuthClient(String authUrl, IAuthCallback authData, ClientFacade client) {
 		this.uri = authUrl;
 		this.authData = authData;
@@ -39,10 +41,15 @@ public class UNICOREStorageAuthClient implements AuthClient {
 	}
 
 	@Override
+	public void setPersistentSessions(boolean persistent) {
+		this.persistent = persistent;
+	}
+
+	@Override
 	public AuthResponse connect(String path) throws Exception {
 		byte[] key = client.createEncryptionKey();
 		String base64Key = key!=null? Utils.encodeBase64(key) : null;
-		JSONObject request = createRequestObject(path, base64Key, client.isCompress(), client.getClientIP(), true);
+		JSONObject request = createRequestObject(path, base64Key, client.isCompress(), client.getClientIP());
 		try(var bc = new BaseClient(uri, HttpClientFactory.getClientConfiguration(), authData);
 				ClassicHttpResponse res = bc.post(request))
 		{
@@ -90,7 +97,6 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		if(lifetime>0)b.addParameter("lifetime", String.valueOf(lifetime));
 		if(renewable)b.addParameter("renewable", "true");
 		if(limited)b.addParameter("limited", "true");
-		
 		try(var bc = new BaseClient(b.build().toString(), HttpClientFactory.getClientConfiguration(), authData);
 			var response = bc.get(ContentType.WILDCARD))
 		{
@@ -136,7 +142,7 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		return url.split("/rest/core")[0]+"/rest/core/token";
 	}
 
-	private JSONObject createRequestObject(String path, String encryptionKey, boolean compress, String clientIP, boolean persistent) throws JSONException {
+	private JSONObject createRequestObject(String path, String encryptionKey, boolean compress, String clientIP) throws JSONException {
 		JSONObject ret = new JSONObject();
 		ret.put("file", path);
 		ret.put("protocol", "UFTP");
@@ -152,10 +158,6 @@ public class UNICOREStorageAuthClient implements AuthClient {
 		params.put("uftp.compression", compress);
 		params.put("uftp.persistent", persistent);
 		return ret;
-	}
-
-	public IAuthCallback getAuthData() {
-		return authData;
 	}
 
 	@Override

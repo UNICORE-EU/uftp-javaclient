@@ -1,7 +1,6 @@
 
 package eu.unicore.uftp.standalone.authclient;
 
-import java.util.Collections;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -24,7 +23,7 @@ public interface AuthClient {
 
     public String issueToken(long lifetime, boolean limited, boolean renewable) throws Exception;
 
-	public default void setPersistentSessions(boolean persistent) {}
+	public void setPersistentSessions(boolean persistent);
 
 	public default boolean isValidUser(JSONObject info) {
 		try {
@@ -40,8 +39,5 @@ public interface AuthClient {
 	 * @return map with server name and auth base URL
 	 * @throws JSONException
 	 */
-	public default Map<String,String> getServers() throws Exception {
-		return Collections.emptyMap();
-	}
-
+	public Map<String,String> getServers() throws Exception;
 }

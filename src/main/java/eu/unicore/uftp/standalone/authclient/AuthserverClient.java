@@ -194,10 +194,6 @@ public class AuthserverClient implements AuthClient {
 		return ret;
 	}
 
-	public IAuthCallback getAuthData() {
-		return authData;
-	}
-
 	@Override
 	public Map<String,String> getServers() throws Exception {
 		getInfo();
