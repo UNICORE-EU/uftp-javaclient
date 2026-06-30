@@ -27,7 +27,7 @@ public class TestShare extends BaseServiceTest {
 	@Test
     public void testCmd() throws Exception {
     	String[] args = new String[]{ new Share().getName(), "-h" };
-    	ClientDispatcher._main(args);
+    	assertEquals(0, ClientDispatcher._main(args));
     }
 
     @Test
@@ -43,7 +43,6 @@ public class TestShare extends BaseServiceTest {
     public void testShare() throws Exception {
     	File src = new File(testsDir, "file.dat");
     	FileUtils.writeStringToFile(src, "test123", "UTF-8");
-    	
     	// share
     	String[] args = new String[]{ new Share().getName(),
     			"-u", "demouser:test123", "-v", 
@@ -82,7 +81,6 @@ public class TestShare extends BaseServiceTest {
     	};
     	assertEquals(0, ClientDispatcher._main(args));
 
-    	
     	// writeable share
     	args = new String[]{ new Share().getName(),
     			"-u", "demouser:test123", "-v", 
@@ -98,7 +96,6 @@ public class TestShare extends BaseServiceTest {
     			"./pom.xml", uftpURL};
     	assertEquals(0, ClientDispatcher._main(args));
     	assertEquals(Utils.md5(src), Utils.md5(new File("./pom.xml")));
-    	
     }
 
 }

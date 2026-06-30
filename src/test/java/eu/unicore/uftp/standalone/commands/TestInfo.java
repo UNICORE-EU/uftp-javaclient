@@ -24,7 +24,7 @@ public class TestInfo extends BaseServiceTest {
     @Test
     public void testUsageAndVersion() throws Exception {
     	String[] args = new String[]{ "-h" };
-    	ClientDispatcher._main(args);
+    	assertEquals(0, ClientDispatcher._main(args));
     	args = new String[]{ "--version" };
     	assertEquals(0, ClientDispatcher._main(args));
     }

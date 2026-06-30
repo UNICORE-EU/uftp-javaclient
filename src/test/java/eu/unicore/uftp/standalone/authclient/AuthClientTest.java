@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import eu.unicore.services.restclient.IAuthCallback;
 import eu.unicore.services.restclient.UsernamePassword;
+import eu.unicore.util.httpclient.HttpClientProperties;
 
 /**
  *
@@ -52,6 +53,19 @@ public class AuthClientTest {
     public void testPathHandling() {
     	Path p1 = Path.of("/foo/bar/.");
     	System.out.println(p1.getParent());	
+    }
+
+    @Test
+    public void testProxySetup() {
+    	String pHost = "http://proxy.host";
+    	String pPort = "1234";
+    	System.setProperty("UFTP_HTTP_PROXY", pHost);
+    	System.setProperty("UFTP_HTTP_PROXY_PORT", pPort);
+    	HttpClientProperties p = HttpClientFactory.getClientConfiguration().
+    			getHttpClientProperties();
+    	assertEquals(pHost, p.getValue(HttpClientProperties.HTTP_PROXY_HOST));
+    	assertEquals(1234, p.getIntValue(HttpClientProperties.HTTP_PROXY_PORT));
+    	
     }
 
 }

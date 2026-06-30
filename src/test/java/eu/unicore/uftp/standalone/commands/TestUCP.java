@@ -37,7 +37,7 @@ public class TestUCP extends BaseServiceTest {
 	@Test
 	public void testCmd() throws Exception {
 		String[] args = new String[]{ new UCP().getName(), "-h" };
-		ClientDispatcher._main(args);
+		assertEquals(0, ClientDispatcher._main(args));
 	}
 
 	@Test

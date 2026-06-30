@@ -1,9 +1,11 @@
 package eu.unicore.uftp.standalone.commands;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,6 +19,9 @@ import org.apache.logging.log4j.message.ParameterizedMessage;
 import eu.emi.security.authn.x509.helpers.PasswordSupplier;
 import eu.unicore.services.restclient.IAuthCallback;
 import eu.unicore.services.restclient.UsernamePassword;
+import eu.unicore.services.restclient.oidc.OIDCAgentAuthN;
+import eu.unicore.services.restclient.oidc.OIDCProperties;
+import eu.unicore.services.restclient.oidc.OIDCServerAuthN;
 import eu.unicore.services.restclient.sshkey.SSHAgent;
 import eu.unicore.services.restclient.sshkey.SSHAgentKeyAuthN;
 import eu.unicore.services.restclient.sshkey.SSHKeyAuthN;
@@ -25,12 +30,12 @@ import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
-import eu.unicore.uftp.standalone.oidc.OIDCAgent;
-import eu.unicore.uftp.standalone.oidc.OIDCServer;
+import eu.unicore.uftp.standalone.authclient.HttpClientFactory;
 import eu.unicore.uftp.standalone.util.Anonymous;
 import eu.unicore.uftp.standalone.util.ConsoleUtils;
 import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 /***
  * handles options related to authentication
@@ -264,16 +269,15 @@ public abstract class Command implements ICommand, UserLogger {
 
 
 	protected IAuthCallback getAuthData() throws Exception {
+		IAuthCallback auth = null;
 		if("anonymous".equals(username)) {
-			return new Anonymous();
+			auth = new Anonymous();
 		}
-
-		if(enableSSH){
-			return getSSHAuthData();
+		else if(enableSSH){
+			auth = getSSHAuthData();
 		}
-
-		if(authheader!=null){
-			return new IAuthCallback() {
+		else if(authheader!=null){
+			auth = new IAuthCallback() {
 				@Override
 				public void addAuthenticationHeaders(HttpMessage httpMessage) {
 					httpMessage.setHeader("Authorization", authheader);
@@ -281,18 +285,16 @@ public abstract class Command implements ICommand, UserLogger {
 			};
 		}
 		else if(oidcAccount!=null) {
-			return new OIDCAgent(oidcAccount);
+			auth = getOIDCAgentAuth();
 		}
 		else if(oidcServerSettings!=null) {
-			return new OIDCServer(oidcServerSettings, verbose);			
+			auth = getOIDCServerAuth();
 		}
 		else{
-			return getUPAuthData();
+			auth = new UsernamePassword(username, password);
 		}
-	}
-
-	protected IAuthCallback getUPAuthData(){
-		return new UsernamePassword(username, password);
+		auth.setLogger(this);
+		return auth;
 	}
 
 	protected IAuthCallback getSSHAuthData() throws Exception {
@@ -375,8 +377,25 @@ public abstract class Command implements ICommand, UserLogger {
 			};
 			ssh  = new SSHKeyAuthN(username, keyFile, pf);
 		}
-		ssh.setLogger(this);
 		return ssh;
+	}
+
+	protected IAuthCallback getOIDCAgentAuth() {
+		OIDCAgentAuthN oidcAuth = new OIDCAgentAuthN();
+		Properties agentProperties = new Properties();
+		agentProperties.setProperty("oidc-agent.account", oidcAccount);
+		oidcAuth.setProperties(agentProperties);
+		return oidcAuth;
+	}
+
+	protected IAuthCallback getOIDCServerAuth() throws IOException {
+		IClientConfiguration dcc = HttpClientFactory.getClientConfiguration();
+		Properties oidcProps = new Properties();
+		try(FileInputStream is = new FileInputStream(oidcServerSettings)){
+			oidcProps.load(is);
+		}
+		OIDCServerAuthN oidcAuth = new OIDCServerAuthN(new OIDCProperties(oidcProps),dcc);
+		return oidcAuth;
 	}
 
 	public void verbose(String msg, Object ... params) {

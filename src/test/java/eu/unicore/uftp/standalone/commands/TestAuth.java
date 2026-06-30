@@ -1,12 +1,9 @@
 package eu.unicore.uftp.standalone.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.utils.Base64;
-import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +12,6 @@ import eu.unicore.uftp.standalone.BaseServiceTest;
 import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
-import eu.unicore.uftp.standalone.oidc.OIDCAgent;
-import eu.unicore.uftp.standalone.oidc.OIDCAgentProxy;
 
 public class TestAuth extends BaseServiceTest {
 
@@ -72,40 +67,4 @@ public class TestAuth extends BaseServiceTest {
 		});
 	}
 
-	@Test
-	public void testOIDCAgentAuth() throws Exception {
-		var a = new OIDCAgent("test");
-		a.setAgentProxy(new MockAP());
-		var m = new HttpGet("https://test");
-		a.addAuthenticationHeaders(m);
-		var h = m.getHeader("Authorization");
-		assertNotNull(h);
-		assertEquals("Bearer some_access_token", h.getValue());
-	}
-
-	@Test
-	public void testOIDCAgentAuthError() throws Exception {
-		var a = new OIDCAgent("wrong_account");
-		a.setAgentProxy(new MockAP());
-		var m = new HttpGet("https://test");
-		assertThrows(RuntimeException.class,()->{
-			a.addAuthenticationHeaders(m);
-		});
-	}
-
-	public static class MockAP extends OIDCAgentProxy {
-		@Override
-		public String send(String data) {
-			JSONObject request = new JSONObject(data);
-			JSONObject j = new JSONObject();
-			if("test".equals(request.getString("account"))){
-				j.put("status", "success");
-				j.put("access_token", "some_access_token");
-			}
-			else {
-				j.put("status", "Error: No account configured with that short name");
-			}
-			return j.toString();
-		}
-	}
 }

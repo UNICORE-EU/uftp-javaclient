@@ -26,7 +26,7 @@ public class TestChecksum extends BaseServiceTest {
     @Test
     public void testCmd() throws Exception {
     	String[] args = new String[]{ new Checksum().getName(), "-h" };
-    	ClientDispatcher._main(args);
+    	assertEquals(0, ClientDispatcher._main(args));
     }
 
     @Test
