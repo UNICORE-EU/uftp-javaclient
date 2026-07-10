@@ -215,9 +215,6 @@ public abstract class Command implements ICommand, UserLogger {
 		}
 	}
 
-	/**
-	 * print help
-	 */
 	@Override
 	public void printUsage() throws IOException {
 		message("UFTP Client {}", ClientDispatcher.getVersion());
@@ -265,8 +262,6 @@ public abstract class Command implements ICommand, UserLogger {
 	protected String getRemoteURLExample2(){
 		return "* https://<ux_addr>/rest/core/storages/<STORAGE>:<file_path>";
 	}
-
-
 
 	protected IAuthCallback getAuthData() throws Exception {
 		IAuthCallback auth = null;
@@ -340,13 +335,9 @@ public abstract class Command implements ICommand, UserLogger {
 				throw new IOException("Private key file " + sshIdentity + " does not exist.");
 			}
 		}
-		if(haveAgent) {
-			verbose("Using SSH agent");
-		}
 		if(keyFile!=null){
 			verbose("Using SSH key <{}>", keyFile.getAbsolutePath());
 		}
-
 		IAuthCallback ssh = null;
 		if(haveAgent) try {
 			SSHAgent agent = new SSHAgent();
@@ -354,8 +345,9 @@ public abstract class Command implements ICommand, UserLogger {
 				agent.selectIdentity(keyFile.getAbsolutePath());
 			}
 			ssh = new SSHAgentKeyAuthN(username, agent);
+			verbose("Using SSH agent");
 		}catch(Exception ex) {
-			verbose("Could not setup SSH agent: {}", Log.getDetailMessage(ex));
+			verbose("Not using SSH agent: {}", Log.getDetailMessage(ex));
 		}
 		if(ssh==null) {
 			final File kf = keyFile;

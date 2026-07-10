@@ -248,6 +248,22 @@ public class TestUCP extends BaseServiceTest {
 	}
 
 	@Test
+	public void testResumeDownloadChecksums() throws Exception {
+		String src =  new File("./pom.xml").getAbsolutePath();
+		String target = new File(testsDir,"copy.xml").getAbsolutePath();
+		String[] args = new String[]{ new UCP().getName(), "-u", "demouser:test123",
+				getAuthURL(src), target
+		};
+		assertEquals(0, ClientDispatcher._main(args));
+		args = new String[]{ new UCP().getName(), "-u", "demouser:test123",
+				"--resume", "-v", "-t", "2", "-T", "1k",
+				getAuthURL(src), target
+		};
+		assertEquals(0, ClientDispatcher._main(args));
+		assertEquals(Utils.md5(new File(src)), Utils.md5(new File(testsDir,"copy.xml")));
+	}
+
+	@Test
 	public void testMultipleDownload() throws Exception {
 		for(int i = 0; i<3; i++) {
 			FileUtils.writeStringToFile(new File(testsDir, "inputs/file"+i), "test123"+i, "UTF-8");
