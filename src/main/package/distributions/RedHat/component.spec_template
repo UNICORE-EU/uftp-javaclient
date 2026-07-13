@@ -7,7 +7,7 @@ License: BSD
 Distribution: RedHat
 Group: Converted/contrib/misc
 URL: https://www.unicore.eu
-Requires: java-11-openjdk-headless
+Requires: jre-headless >= 17
 AutoReqProv: no
 BuildArch: @component-architecture@
 Packager: Bernd Schuller unicore-support@lists.sourceforge.net
