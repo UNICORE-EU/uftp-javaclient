@@ -65,7 +65,8 @@ public class AuthClientTest {
     			getHttpClientProperties();
     	assertEquals(pHost, p.getValue(HttpClientProperties.HTTP_PROXY_HOST));
     	assertEquals(1234, p.getIntValue(HttpClientProperties.HTTP_PROXY_PORT));
-    	
+    	System.clearProperty("UFTP_HTTP_PROXY");
+    	System.clearProperty("UFTP_HTTP_PROXY_PORT");
     }
 
 }
