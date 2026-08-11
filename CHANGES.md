@@ -10,7 +10,7 @@ https://github.com/UNICORE-EU/uftp-javaclient/issues
    This release requires Java 17 or later!
 
 
-UFTP Client 2.4.1 (released MMM DD, 2026)
+UFTP Client 2.4.1 (released Jul 16, 2026)
 -----------------------------------------
  - fix: Linux rpm package now requires Java 17 or later
  - update to UNICORE 11.1.0 base
