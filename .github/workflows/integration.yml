@@ -15,7 +15,7 @@ jobs:
 
     services:
       unicore:
-        image: ghcr.io/unicore-eu/uftp-testing-all:3.3.0
+        image: ghcr.io/unicore-eu/uftp-testing-all:3.5.2
         ports:
           - 9000:9000
           - 64434:64434
