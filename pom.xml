@@ -24,7 +24,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <auth.version>3.3.2</auth.version>
-    <seclib.version>8.2.0</seclib.version>
+    <seclib.version>8.2.1</seclib.version>
     <use.version>6.1.2</use.version>
     <core.version>2.24.5</core.version>
     <jline.version>4.3.1</jline.version>
