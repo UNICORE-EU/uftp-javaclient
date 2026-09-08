@@ -9,6 +9,9 @@ https://github.com/UNICORE-EU/uftp-javaclient/issues
 
    This release requires Java 17 or later!
 
+UFTP Client 2.4.2 (released Aug 20, 2026)
+-----------------------------------------
+ - fix: wrong version of securityLibrary in 2.4.1 release
 
 UFTP Client 2.4.1 (released Jul 16, 2026)
 -----------------------------------------
