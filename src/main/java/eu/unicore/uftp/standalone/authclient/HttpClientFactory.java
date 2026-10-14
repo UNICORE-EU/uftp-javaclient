@@ -1,11 +1,11 @@
 
 package eu.unicore.uftp.standalone.authclient;
 
-import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 import eu.unicore.util.httpclient.HttpClientProperties;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import io.imunity.tanl.x509.helpers.BinaryCertChainValidator;
 
 /**
  *

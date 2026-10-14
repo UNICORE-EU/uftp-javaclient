@@ -16,7 +16,6 @@ import org.apache.commons.cli.help.HelpFormatter;
 import org.apache.hc.core5.http.HttpMessage;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
-import eu.emi.security.authn.x509.helpers.PasswordSupplier;
 import eu.unicore.services.restclient.IAuthCallback;
 import eu.unicore.services.restclient.UsernamePassword;
 import eu.unicore.services.restclient.oidc.OIDCAgentAuthN;
@@ -36,6 +35,7 @@ import eu.unicore.uftp.standalone.util.ConsoleUtils;
 import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import io.imunity.tanl.x509.helpers.PasswordSupplier;
 
 /***
  * handles options related to authentication

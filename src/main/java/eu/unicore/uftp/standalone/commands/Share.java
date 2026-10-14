@@ -7,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.unicore.security.Client;
 import eu.unicore.services.restclient.BaseClient;
 import eu.unicore.services.restclient.utils.UnitParser;
@@ -15,6 +14,7 @@ import eu.unicore.uftp.dpc.Utils;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import io.imunity.tanl.x509.helpers.BinaryCertChainValidator;
 
 /**
  * create, list, update, delete shares
