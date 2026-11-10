@@ -568,12 +568,12 @@ public class UCP extends DataTransferCommand {
 	}
 
 	public static class Statistics {
-		long totalBytes = 0;
-		long totalChunks = 0;
-		long numberOfSourceFiles = 0;
-		long numberOfExistingFiles = 0;
-		long numberOfResumedFiles = 0;
-		final Set<String> targetFileNames = new HashSet<>();
-		final Set<String> sourceFileNames = new HashSet<>();
+		public long totalBytes = 0;
+		public long totalChunks = 0;
+		public long numberOfSourceFiles = 0;
+		public long numberOfExistingFiles = 0;
+		public long numberOfResumedFiles = 0;
+		public final Set<String> targetFileNames = new HashSet<>();
+		public final Set<String> sourceFileNames = new HashSet<>();
 	}
 }

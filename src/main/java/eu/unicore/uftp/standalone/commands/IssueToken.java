@@ -90,7 +90,10 @@ public class IssueToken extends Command {
 			inspect(token);
 		}
 		System.out.println(token);		
+		_lastToken = token;
 	}
+
+	static String _lastToken = null;
 
 	private void inspect(String token) throws Exception {
 		JSONObject o = JWTUtils.getPayload(token);

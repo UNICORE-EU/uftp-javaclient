@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import eu.unicore.uftp.standalone.commands.ICommand;
+import eu.unicore.util.Log;
 
 /**
  * Standalone client entry point
@@ -75,8 +76,15 @@ public final class ClientDispatcher {
 		boolean OK = false;
 		try{
 			cmd.parseOptions(cmdArgs);
+		}catch(Exception e) {
+			System.err.println(Log.createFaultMessage("Error parsing arguments", e));
+			return 2;
+		}
+		try {
 			OK = cmd.runCommand();
-		}catch(IllegalStateException e) {}
+		}catch(Exception e) {
+			System.err.println(Log.createFaultMessage("Error running <"+cmdName+">", e));
+		}
 		return OK ? 0 : 1;
 	}
 

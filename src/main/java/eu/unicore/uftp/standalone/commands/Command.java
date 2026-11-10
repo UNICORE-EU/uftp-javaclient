@@ -13,7 +13,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.help.HelpFormatter;
-import org.apache.hc.core5.http.HttpMessage;
 import org.apache.logging.log4j.message.ParameterizedMessage;
 
 import eu.unicore.services.restclient.IAuthCallback;
@@ -30,7 +29,6 @@ import eu.unicore.uftp.standalone.ClientDispatcher;
 import eu.unicore.uftp.standalone.ClientFacade;
 import eu.unicore.uftp.standalone.ConnectionInfoManager;
 import eu.unicore.uftp.standalone.authclient.HttpClientFactory;
-import eu.unicore.uftp.standalone.util.Anonymous;
 import eu.unicore.uftp.standalone.util.ConsoleUtils;
 import eu.unicore.uftp.standalone.util.UOptions;
 import eu.unicore.util.Log;
@@ -125,10 +123,6 @@ public abstract class Command implements ICommand, UserLogger {
 		CommandLineParser parser = new DefaultParser();
 		line = parser.parse(options, args);
 		fileArgs = line.getArgs();
-		if(line.hasOption("h")) {
-			printUsage();
-			throw new IllegalStateException();
-		}
 		if (line.hasOption('v')){
 			verbose = true;
 			verbose("Verbose mode");
@@ -266,17 +260,14 @@ public abstract class Command implements ICommand, UserLogger {
 	protected IAuthCallback getAuthData() throws Exception {
 		IAuthCallback auth = null;
 		if("anonymous".equals(username)) {
-			auth = new Anonymous();
+			auth = (msg)->{}; // NOP
 		}
 		else if(enableSSH){
 			auth = getSSHAuthData();
 		}
 		else if(authheader!=null){
-			auth = new IAuthCallback() {
-				@Override
-				public void addAuthenticationHeaders(HttpMessage httpMessage) {
-					httpMessage.setHeader("Authorization", authheader);
-				}
+			auth = (msg)-> {
+				msg.setHeader("Authorization", authheader);
 			};
 		}
 		else if(oidcAccount!=null) {

@@ -22,20 +22,21 @@ import org.apache.commons.cli.Options;
  * @author schuller
  */
 public class UOptions extends Options {
+
 	private static final long serialVersionUID = 1L;
-	
+
 	private final Set<String> usedOptionNames = new HashSet<>();
 
 	public static final String GRP_DEFAULT = "__DEFAULT__";
-	
+
 	public static final String GRP_GENERAL = "__GENERAL__";
-	
+
 	public static final String GRP_AUTH = "__AUTHENTICATION__";
 
 	public static final String GRP_TRANSFER = "__TRANSFER__";
-	
+
 	private final Map<String,List<Option>> optionGroups = new HashMap<>();
-	
+
 	private void markAsUsed(String optionName) {
 		if(usedOptionNames.contains(optionName)) {
 			throw new IllegalArgumentException("The option \'"+optionName+
@@ -43,12 +44,12 @@ public class UOptions extends Options {
 		}
 		usedOptionNames.add(optionName);
 	}
-	
+
 	@Override
 	public Options addOption(Option option){
 		return addOption(option, GRP_DEFAULT);
 	}
-	
+
 	public Options addOption(Option option, String optionGroup){
 		markAsUsed(option.getLongOpt());
 		markAsUsed(option.getOpt());
@@ -61,35 +62,35 @@ public class UOptions extends Options {
 		grp.add(option);
 		return result;
 	}
-	
+
 	private List<Option>getOptionsGroup(String name){
 		return optionGroups.get(name);
 	}
-	
+
 	public Options getDefaultOptions(){
 		List<Option> defOpts = getOptionsGroup(GRP_DEFAULT);
 		if(defOpts==null)return null;
-		Options res=new Options();
+		Options res = new Options();
 		for(Option o: defOpts){
 			res.addOption(o);
 		}
 		return res;
 	}
-	
+
 	public Options getGeneralOptions(){
 		List<Option> secOpts = getOptionsGroup(GRP_GENERAL);
 		if(secOpts==null)return null;
-		Options res=new Options();
+		Options res = new Options();
 		for(Option o: secOpts){
 			res.addOption(o);
 		}
 		return res;
 	}
-	
+
 	public Options getAuthenticationOptions(){
 		List<Option> secOpts = getOptionsGroup(GRP_AUTH);
 		if(secOpts==null)return null;
-		Options res=new Options();
+		Options res = new Options();
 		for(Option o: secOpts){
 			res.addOption(o);
 		}
@@ -99,10 +100,11 @@ public class UOptions extends Options {
 	public Options getTransferOptions(){
 		List<Option> secOpts = getOptionsGroup(GRP_TRANSFER);
 		if(secOpts==null)return null;
-		Options res=new Options();
+		Options res = new Options();
 		for(Option o: secOpts){
 			res.addOption(o);
 		}
 		return res;
 	}
+
 }

@@ -24,12 +24,12 @@ public class ULS extends Command {
 
 	@Override
 	public String getArgumentDescription() {
-		return "<remote_directory>";
+		return "<remote_path> [...]";
 	}
 
 	@Override
 	public String getSynopsis() {
-		return "Lists a remote directory.";
+		return "Lists remote paths";
 	}
 
 	@Override

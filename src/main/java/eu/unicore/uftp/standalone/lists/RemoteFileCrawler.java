@@ -104,7 +104,7 @@ public class RemoteFileCrawler extends FileCrawler {
         	}
         }
     }
-  
+ 
     public boolean isSingleFile(String path) {
     	try{
     		if(sc.stat(path).isDirectory())return false;

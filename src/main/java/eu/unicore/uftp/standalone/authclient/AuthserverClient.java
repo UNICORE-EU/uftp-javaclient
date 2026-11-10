@@ -1,6 +1,7 @@
 package eu.unicore.uftp.standalone.authclient;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
@@ -194,13 +195,15 @@ public class AuthserverClient implements AuthClient {
 		return ret;
 	}
 
+	private final static List<String> _ignored = Arrays.asList("client", "server", "_links");
+
 	@Override
 	public Map<String,String> getServers() throws Exception {
 		getInfo();
 		String infoURL = makeInfoURL(uri);
 		Map<String,String> servers = new HashMap<>();
 		for(String key: info.keySet()) {
-			if("client".equals(key) || "server".equals(key))continue;
+			if(_ignored.contains(key))continue;
 			servers.put(key, infoURL+"/"+key);
 		}
 		return servers;

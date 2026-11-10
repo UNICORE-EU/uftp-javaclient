@@ -47,7 +47,7 @@ public class Checksum extends RangedCommand {
 				.required(false)
 				.get());
 		options.addOption(Option.builder("a").longOpt("algorithm")
-				.desc("Hash algorithm to use. One of: MD5(default), SHA-1, SHA-256, SHA-512")
+				.desc("Hash algorithm to use. One of: MD5(default), SHA-1, SHA-256, SHA-512, CRC32")
 				.required(false)
 				.hasArg()
 				.argName("name")
@@ -70,7 +70,7 @@ public class Checksum extends RangedCommand {
 			throw new IllegalArgumentException("Missing argument: "+getArgumentDescription());
 		}
 	}
-	
+
 	@Override
 	protected void run(ClientFacade client) throws Exception {
 		UFTPSessionClient sc = null;
@@ -97,14 +97,14 @@ public class Checksum extends RangedCommand {
 			fileList.crawl( (x, dummy) -> singleFileChecksum(x, sc));
 		}
 	}
-	
+
 	private boolean haveSetAlgorithm = false;
-	
+
 	private void singleFileChecksum(String path, UFTPSessionClient sc) throws IOException{
 		if(hashAlgorithm!=null && !haveSetAlgorithm) {
-			String reply = sc.setHashAlgorithm(hashAlgorithm);
+			sc.setHashAlgorithm(hashAlgorithm);
 			haveSetAlgorithm = true;
-			verbose("Set hash algorithm: {}", reply);
+			verbose("Set hash algorithm: {}", hashAlgorithm);
 		}
 		HashInfo hi = sc.getHash(path, getOffset(), getLength());
 		System.out.println(hi.hash+"  "+hi.path);

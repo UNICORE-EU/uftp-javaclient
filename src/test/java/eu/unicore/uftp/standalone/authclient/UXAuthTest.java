@@ -113,8 +113,8 @@ public class UXAuthTest extends BaseServiceTest {
 				throw new IOException(err);
 			}
 			JSONObject j = new JSONObject();
-			j.put("uftp.server.host", uftpd.getHost());
-			j.put("uftp.server.port", String.valueOf(uftpd.getPort()));
+			j.put("uftp.server.host", "localhost");
+			j.put("uftp.server.port", "63320");
 			return j.toString();
 		}
 

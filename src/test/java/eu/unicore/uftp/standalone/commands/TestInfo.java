@@ -27,12 +27,18 @@ public class TestInfo extends BaseServiceTest {
     	assertEquals(0, ClientDispatcher._main(args));
     	args = new String[]{ "--version" };
     	assertEquals(0, ClientDispatcher._main(args));
+    	args = new String[]{ new Info().getName(), "-h" };
+    	assertEquals(0, ClientDispatcher._main(args));
     }
 
     @Test
     public void testCmd() throws Exception {
-    	String[] args = new String[]{ new Info().getName(), "-h" };
+    	String[] args = new String[]{ new Info().getName(), 
+    			"-u", "demouser:test123", "-h" };
     	assertEquals(0, ClientDispatcher._main(args));
+    	args = new String[]{ new Info().getName(), 
+    			"--no-such-option" };
+    	assertEquals(2, ClientDispatcher._main(args));
     }
 
     @Test
